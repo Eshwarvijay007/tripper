@@ -99,6 +99,13 @@ export async function getBookingDestinations(query) {
   return res.json();
 }
 
+export async function getPlacesSuggestions(query) {
+  const url = `${API_BASE}/api/places/suggest?query=${encodeURIComponent(query)}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Places suggest failed ${res.status}`);
+  return res.json();
+}
+
 export async function getNearbyAttractions({ lat, lon }) {
   const res = await fetch(`${API_BASE}/api/search/poi`, {
     method: 'POST',

@@ -1,4 +1,5 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import TripPageHeader from '../components/TripPageHeader';
 // Removed static title and itinerary in favor of dynamic cards
 import ChatPanel from '../components/ChatPanel';
@@ -8,11 +9,11 @@ import AirportsList from '../components/AirportsList';
 import DestinationsList from '../components/DestinationsList';
 import AttractionsList from '../components/AttractionsList';
 import HotelHeroCard from '../components/HotelHeroCard';
-import { searchHotels, getFlightDestinations, getBookingDestinations, getNearbyAttractions } from '../lib/api';
+import { searchHotels, getFlightDestinations, getBookingDestinations, getNearbyAttractions, getPlacesSuggestions } from '../lib/api';
 
 const FinalTripPlannerPage = () => {
   const tripData = {
-    title: '5-Day Andalusian Road Trip Adventure',
+    title: '---',
     legs: [
       { city: 'Seville', days: 'Day 1-3', itineraries: [] },
       { city: 'Granada', days: 'Day 3-5', itineraries: [] },
@@ -42,6 +43,7 @@ const FinalTripPlannerPage = () => {
 
   const [cards, setCards] = useState([]);
   const [mapMarkers, setMapMarkers] = useState([]);
+  const location = useLocation();
 
   const defaultDates = useMemo(() => {
     const start = new Date();
@@ -103,7 +105,13 @@ const FinalTripPlannerPage = () => {
   const handleShowDestinations = async () => {
     try {
       const query = tripData.legs?.[0]?.city || 'Hubli';
-      const res = await getBookingDestinations(query);
+      // Prefer Google Places suggestions; fallback to Booking if needed
+      let res;
+      try {
+        res = await getPlacesSuggestions(query);
+      } catch {
+        res = await getBookingDestinations(query);
+      }
       const items = res.items || [];
       setCards((prev) => [
         ...prev,
@@ -121,6 +129,79 @@ const FinalTripPlannerPage = () => {
       ]);
     }
   };
+
+  // Shared function to process a free-form user text
+  const processUserText = async (text) => {
+    try {
+      let destRes;
+      try {
+        destRes = await getPlacesSuggestions(text);
+      } catch {
+        destRes = await getBookingDestinations(text);
+      }
+      const items = destRes.items || [];
+      if (!items.length) {
+        setCards([{ id: `${Date.now()}`, type: 'error', title: 'Hotels', error: 'No matching destination found.' }]);
+        return;
+      }
+      let chosen = items.find(i => (i.dest_type || '').toLowerCase() === 'city')
+        || items.find(i => typeof i.lat === 'number' && typeof i.lon === 'number')
+        || items[0];
+      const city = chosen.city_name || chosen.name;
+      const hotelRes = await searchHotels({
+        destination: { city },
+        dates: defaultDates,
+        rooms: 1,
+        adults: 2,
+        children: 0,
+        currency: 'USD'
+      });
+      const hotelItems = hotelRes.options || [];
+      if (hotelItems.length > 0) {
+        setCards([
+          {
+            id: `${Date.now()}`,
+            type: 'hotels',
+            title: `Hotels in ${city}`,
+            items: hotelItems,
+          }
+        ]);
+      } else {
+        const hotelDest = items.find(i => (i.dest_type || '').toLowerCase() === 'hotel');
+        const single = hotelDest || {
+          name: `Top stay in ${city}`,
+          city_name: chosen.city_name || city,
+          region: chosen.region,
+          country: chosen.country,
+          image_url: chosen.image_url,
+          lat: chosen.lat,
+          lon: chosen.lon,
+        };
+        setCards([
+          {
+            id: `${Date.now()}`,
+            type: 'hotel_single',
+            title: `Recommended stay in ${city}`,
+            item: single,
+          }
+        ]);
+      }
+      if (typeof chosen.lat === 'number' && typeof chosen.lon === 'number') {
+        setMapMarkers([{ lat: chosen.lat, lon: chosen.lon, title: city }]);
+      }
+    } catch (e) {
+      setCards([{ id: `${Date.now()}`, type: 'error', title: 'Hotels', error: e.message || 'Failed to load hotels' }]);
+    }
+  };
+
+  // If navigated with initialQuery from Layla page, auto-process it once
+  useEffect(() => {
+    const q = location?.state?.initialQuery;
+    if (q && typeof q === 'string' && q.trim()) {
+      processUserText(q);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
@@ -142,68 +223,7 @@ const FinalTripPlannerPage = () => {
               } else if (lower.includes('destination') || lower.includes('place')) {
                 handleShowDestinations();
               }
-            }} onUserMessage={async (text) => {
-              try {
-                // 1) Resolve destination from free-form text
-                const destRes = await getBookingDestinations(text);
-                const items = destRes.items || [];
-                if (!items.length) {
-                  setCards([{ id: `${Date.now()}`, type: 'error', title: 'Hotels', error: 'No matching destination found.' }]);
-                  return;
-                }
-                // Prefer city-type, otherwise first with coords
-                let chosen = items.find(i => (i.dest_type || '').toLowerCase() === 'city')
-                  || items.find(i => typeof i.lat === 'number' && typeof i.lon === 'number')
-                  || items[0];
-                const city = chosen.city_name || chosen.name;
-                // 2) Search hotels for resolved city
-                const hotelRes = await searchHotels({
-                  destination: { city },
-                  dates: defaultDates,
-                  rooms: 1,
-                  adults: 2,
-                  children: 0,
-                  currency: 'USD'
-                });
-                const hotelItems = hotelRes.options || [];
-                // 3) Update cards (clear previous) and map markers
-                if (hotelItems.length > 0) {
-                  setCards([
-                    {
-                      id: `${Date.now()}`,
-                      type: 'hotels',
-                      title: `Hotels in ${city}`,
-                      items: hotelItems,
-                    }
-                  ]);
-                } else {
-                  // Fallback: show at least one nice hotel card from destination matches if present
-                  const hotelDest = items.find(i => (i.dest_type || '').toLowerCase() === 'hotel');
-                  const single = hotelDest || {
-                    name: `Top stay in ${city}`,
-                    city_name: chosen.city_name || city,
-                    region: chosen.region,
-                    country: chosen.country,
-                    image_url: chosen.image_url,
-                    lat: chosen.lat,
-                    lon: chosen.lon,
-                  };
-                  setCards([
-                    {
-                      id: `${Date.now()}`,
-                      type: 'hotel_single',
-                      title: `Recommended stay in ${city}`,
-                      item: single,
-                    }
-                  ]);
-                }
-                if (typeof chosen.lat === 'number' && typeof chosen.lon === 'number') {
-                  setMapMarkers([{ lat: chosen.lat, lon: chosen.lon, title: city }]);
-                }
-              } catch (e) {
-                setCards([{ id: `${Date.now()}`, type: 'error', title: 'Hotels', error: e.message || 'Failed to load hotels' }]);
-              }
-            }} />
+            }} onUserMessage={async (text) => { await processUserText(text); }} />
           </div>
         </div>
         {/* Right: Trip panel */}
