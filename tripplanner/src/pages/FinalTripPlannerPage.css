@@ -1,0 +1,204 @@
+.SideBarHeader_sidebar_header__aUEB5 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 16px;
+  height: 48px;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.SideBarHeader_sidebar_logo_wrapper__5_FSQ {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.SideBarHeader_sidebar_logo_link__WaosG {
+  display: flex;
+}
+
+.SideBarHeader_name_trip_wrapper__B4P2L span {
+  font-weight: 500;
+}
+
+.DropdownMenu_menuContainer__Uw5VN {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.DropdownMenu_currency_and_locale_button__5wxcz {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background-color: #e9ecef;
+  padding: 4px 8px;
+  border-radius: 8px;
+}
+
+.MenuButton_menu_button__TdedK {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.MenuButton_user_avatar__BcYwN {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+}
+
+.TripPageId_trip_title_block__GDPg3 {
+  padding: 16px;
+}
+
+.TripPageId_title_and_details__DWGzf {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.TripPageId_title_content_title__BwfYr {
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.TripPageId_trip_details_button__SDQAv {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #f3f3f3;
+  padding: 8px 12px;
+  border-radius: 8px;
+}
+
+.TripPageId_details_divider__oq_KQ {
+  width: 1px;
+  height: 16px;
+  background-color: #e0e0e0;
+}
+
+.TripActionButtons_container__7RUAM {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.TripActionButtons_pdf_wrapper__bmHV5 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.DownloadTripPDFButton_button__htvyD {
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.TripActionButtons_share_button__i2ryn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background-color: #f3f3f3;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: none;
+}
+
+.TripActionsButtons_purchase_button__734W3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #000;
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: none;
+}
+
+.TripPageId_trip_entity_block__9_lCm {
+  padding: 16px;
+}
+
+.TripStickyNav_itinerary_title__EJSse {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.TripLegsBar_tab_container__3Gubc {
+  display: flex;
+  gap: 16px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.TripLegsBar_nav_tab__gtSk_ {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 8px;
+  cursor: pointer;
+}
+
+.TripLegsBar_active__kin1U {
+  border-bottom: 2px solid #000;
+}
+
+.TripLegsBar_navNumber__xJ3w6 {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 12px;
+  background-color: #e0e0e0;
+}
+
+.TabOverview_tab_overview_with_timeline__IlIAw {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.TabOverview_timeline_circle__8BKXy {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: #000;
+  color: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.TabOverview_location_title__1VNiZ {
+  font-weight: 600;
+}
+
+.TabOverview_days_count__ktJkT {
+  color: #6c757d;
+}
+
+.TabItinerary_dayAndTitleBlock__P9WPn {
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.TabItinerary_dayAndTitleBlock__P9WPn small {
+  font-weight: 400;
+  color: #6c757d;
+  margin-left: 8px;
+}
+
+.ReadMore_readMoreButton__n9ws8 {
+  color: #007bff;
+  cursor: pointer;
+}
