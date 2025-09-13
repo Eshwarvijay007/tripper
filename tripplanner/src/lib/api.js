@@ -115,3 +115,16 @@ export async function getNearbyAttractions({ lat, lon }) {
   if (!res.ok) throw new Error(`POI search failed ${res.status}`);
   return res.json();
 }
+
+export async function agentPlan(payload) {
+  const res = await fetch(`${API_BASE}/api/agent/plan`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Agent plan failed ${res.status}: ${text}`);
+  }
+  return res.json();
+}

@@ -155,24 +155,25 @@ class PlannerRunner:
         must_do = ", ".join(state.must_do) if state.must_do else ""
 
         schema_hint = (
-            "Return JSON with: {\n"
+            "Return ONLY JSON with: {\n"
             "  \"day_plans\": [\n"
             "    {\n"
             "      \"summary\": string,\n"
             "      \"activities\": [ { \"name\": string, \"category\": string } ]\n"
             "    }\n"
             "  ]\n"
-            "} and nothing else."
+            "}"
         )
 
         prompt = (
+            f"You are a trip planning assistant.\n"
             f"Plan a {nights}-day trip in {dest_label} for a {pace} pace.\n"
             f"Interests: {interests}.\n"
             + (f"Must-do: {must_do}.\n" if must_do else "")
             + "Select 4-6 realistic attractions per day from this list (avoid repeats):\n"
             + "\n".join(poi_lines)
-            + "\nFocus on geographic clustering and reasonable daily flow."
-            + "\n" + schema_hint
+            + "\nFocus on geographic clustering and reasonable daily flow.\n"
+            + schema_hint
         )
 
         data = gemini_json(prompt)

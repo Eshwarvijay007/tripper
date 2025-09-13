@@ -9,9 +9,8 @@ const ChatPanel = ({ onQuickAction, onUserMessage }) => {
   useEffect(() => {
     if (messages.length === 0) {
       addMessage({
-        //sender: 'assistant',
-        // text:
-        //   "Now that we have your trip, how about we modify and reserve it. I can help you tailor your trip, update your preferences and add or remove things. Remember, the whole trip will be booked for you hassle free! You don't have to do anything.",
+        sender: 'assistant',
+        text: 'Hi! Tell me about your trip. Where are you headed and when? I can plan your days and suggest stays.'
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

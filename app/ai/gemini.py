@@ -25,7 +25,14 @@ def _configure() -> None:
     _configured = True
 
 
-def gemini_json(prompt: str, *, system: Optional[str] = None, model: str = "gemini-1.5-flash", temperature: float = 0.2, max_output_tokens: int = 4096) -> Dict[str, Any]:
+def gemini_json(
+    prompt: str,
+    *,
+    system: Optional[str] = None,
+    model: Optional[str] = None,
+    temperature: float = 0.2,
+    max_output_tokens: int = 4096,
+) -> Dict[str, Any]:
     """Call Gemini and return parsed JSON.
 
     Raises RuntimeError on configuration or generation errors.
@@ -34,12 +41,13 @@ def gemini_json(prompt: str, *, system: Optional[str] = None, model: str = "gemi
     if genai is None:
         raise RuntimeError("Gemini client unavailable")
 
+    model_name = model or os.getenv("GEMINI_MODEL") or "gemini-1.5-flash"
     generation_config = {
         "temperature": temperature,
         "max_output_tokens": max_output_tokens,
         "response_mime_type": "application/json",
     }
-    model_client = genai.GenerativeModel(model_name=model, generation_config=generation_config)
+    model_client = genai.GenerativeModel(model_name=model_name, generation_config=generation_config)
     parts = [prompt]
     if system:
         parts = [f"SYSTEM:\n{system}\n\nUSER:\n{prompt}"]
@@ -53,15 +61,23 @@ def gemini_json(prompt: str, *, system: Optional[str] = None, model: str = "gemi
         raise RuntimeError(f"Gemini JSON generation failed: {e}")
 
 
-def gemini_text(prompt: str, *, system: Optional[str] = None, model: str = "gemini-1.5-flash", temperature: float = 0.5, max_output_tokens: int = 2048) -> str:
+def gemini_text(
+    prompt: str,
+    *,
+    system: Optional[str] = None,
+    model: Optional[str] = None,
+    temperature: float = 0.5,
+    max_output_tokens: int = 2048,
+) -> str:
     _configure()
     if genai is None:
         raise RuntimeError("Gemini client unavailable")
+    model_name = model or os.getenv("GEMINI_MODEL") or "gemini-2.5-flash"
     generation_config = {
         "temperature": temperature,
         "max_output_tokens": max_output_tokens,
     }
-    model_client = genai.GenerativeModel(model_name=model, generation_config=generation_config)
+    model_client = genai.GenerativeModel(model_name=model_name, generation_config=generation_config)
     parts = [prompt]
     if system:
         parts = [f"SYSTEM:\n{system}\n\nUSER:\n{prompt}"]
@@ -70,4 +86,3 @@ def gemini_text(prompt: str, *, system: Optional[str] = None, model: str = "gemi
         return resp.text or ""
     except Exception as e:  # pragma: no cover
         raise RuntimeError(f"Gemini text generation failed: {e}")
-

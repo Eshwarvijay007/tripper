@@ -12,6 +12,7 @@ from .api.jobs import router as jobs_router
 from .api.runs import router as runs_router
 from .api.booking import router as booking_router
 from .api.places import router as places_router
+from .api.agent import router as agent_router
 
 
 load_dotenv()
@@ -33,6 +34,7 @@ app.include_router(jobs_router)
 app.include_router(runs_router)
 app.include_router(booking_router)
 app.include_router(places_router)
+app.include_router(agent_router)
 
 
 @app.get("/")
