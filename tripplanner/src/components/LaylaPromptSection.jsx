@@ -1,37 +1,25 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Globe2, Briefcase, Users, FileText, Send } from 'lucide-react';
+import { postChatMessage, streamChat } from '../lib/api';
+import { ChatContext } from '../context/ChatContext';
 
 const LaylaPromptSection = () => {
   const [inputValue, setInputValue] = useState('');
-  const [messages, setMessages] = useState([]);
+  const { messages, addMessage, updateLastMessage } = useContext(ChatContext);
   const [isTyping, setIsTyping] = useState(false);
+  const [conversationId, setConversationId] = useState(null);
+  const navigate = useNavigate();
+  const [chatDisabled, setChatDisabled] = useState(false);
 
-  const handleSendMessage = (message) => {
+  const handleSendMessage = async (message) => {
     const text = message || inputValue;
     if (text.trim() === '') return;
-
-    const newMessages = [...messages, { text, sender: 'user' }];
-    setMessages(newMessages);
+    addMessage({ text, sender: 'user' });
     setInputValue('');
-    setIsTyping(true);
-
-    // Simulate AI response
-    setTimeout(() => {
-      setIsTyping(false);
-      setMessages(prevMessages => [...prevMessages, { text: getAIResponse(text), sender: 'assistant' }]);
-    }, 2000);
-  };
-
-  const getAIResponse = (message) => {
-    const lowerMessage = message.toLowerCase();
-    if (lowerMessage.includes('create') && lowerMessage.includes('trip')) {
-      return "Awesome! Let's get this trip started. Where would you like to go?";
-    } else if (lowerMessage.includes('inspire')) {
-      return "I'd love to inspire you! Here are some amazing destinations that are perfect right now:";
-    } else {
-      return "I can help with that! What are you thinking?";
-    }
+    setChatDisabled(true);
+    navigate('/trip');
   };
 
   const quickActions = [
@@ -65,6 +53,7 @@ const LaylaPromptSection = () => {
                     }}
                     placeholder="Plan a trip to..."
                     className="border-input placeholder:text-layla-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 flex field-sizing-content min-h-16 w-full rounded-md bg-transparent px-3 py-2 transition-[color,box-shadow] outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm dark:bg-transparent border-0 shadow-none focus-visible:ring-0 text-base resize-none overflow-y-auto"
+                    disabled={chatDisabled}
                   ></textarea>
                 </div>
               </div>
@@ -77,7 +66,7 @@ const LaylaPromptSection = () => {
                 <div className="flex justify-end items-center flex-shrink-0">
                   <button
                     onClick={() => handleSendMessage()}
-                    disabled={!inputValue.trim()}
+                    disabled={!inputValue.trim() || chatDisabled}
                     className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all cursor-pointer disabled:pointer-events-none disabled:opacity-50 bg-primary-green text-white shadow-xs hover:bg-primary-green/90 size-9"
                   >
                     <Send />

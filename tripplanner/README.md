@@ -79,7 +79,11 @@ tripplanner-react/
    npm install
    ```
 
-2. **Start development server:**
+2. **Configure backend API base (optional):**
+   - Copy `.env.example` to `.env`
+   - Set `VITE_API_BASE` to your FastAPI URL (default `http://localhost:8000`)
+
+3. **Start development server:**
    ```bash
    npm run dev
    ```
@@ -197,6 +201,19 @@ This project demonstrates modern React development practices including:
 ## 📄 License
 
 This project is for educational and demonstration purposes only. All design rights belong to the original TripPlanner.ai team.
+
+## Backend Integration (FastAPI)
+
+- From repo root, run the backend:
+  ```bash
+  pip install -r requirements.txt
+  uvicorn app.main:app --reload
+  ```
+- Health: `GET http://localhost:8000/api/healthz`
+- The Layla prompt section calls:
+  - `POST {VITE_API_BASE}/api/chat/messages`
+  - Streams NDJSON from `GET {VITE_API_BASE}/api/chat/stream/{conversation_id}`
+- With the current stub backend, you will see streaming placeholder tokens in the chat UI.
 
 ---
 
