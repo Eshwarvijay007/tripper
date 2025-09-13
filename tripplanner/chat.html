@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trip Planning Chat - Layla AI</title>
+    <meta name="description" content="Chat with Layla AI to plan your perfect trip">
+    
+    <link rel="icon" href="https://layla.ai/theme/layla/new-character-small.webp" type="image/webp">
+    <link rel="stylesheet" href="layla-styles.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': '#21BCBE',
+                        'primary-400': '#21BCBE',
+                        'primary-500': '#1da5a7'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-white font-sans">
+    <!-- Header -->
+    <div class="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 px-4 py-3">
+        <div class="flex items-center justify-between max-w-4xl mx-auto">
+            <div class="flex items-center gap-3">
+                <a href="layla.html" class="flex items-center gap-2">
+                    <img alt="Layla avatar" width="32" height="32" class="rounded-full" src="https://layla.ai/theme/layla/new-character-small.webp">
+                    <span class="font-semibold text-lg">Layla</span>
+                </a>
+                <span class="text-sm text-gray-500">Trip Planning</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <button class="text-gray-500 hover:text-gray-700">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat Container -->
+    <div class="pt-20 pb-24 min-h-screen bg-gray-50">
+        <div class="max-w-4xl mx-auto px-4">
+            <div id="chatMessages" class="space-y-6">
+                <!-- Initial message -->
+                <div class="chat-message assistant">
+                    <img class="avatar" alt="Layla" src="https://layla.ai/theme/layla/new-character-small.webp">
+                    <div class="message-content">
+                        Hey there, Layla here! Excited to help you create your perfect next trip. Just tell me what you're thinking and let's do this together.
+                        <button class="copy-button mt-2" onclick="copyMessage(this)">
+                            <img src="https://layla.ai/buttons/copy-black.svg" width="16" height="16" alt="copy">
+                        </button>
+                    </div>
+                </div>
+
+                <div class="chat-message user">
+                    <div class="message-content">create a new trip</div>
+                    <img class="avatar" alt="User" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiM2Yjk0NGQiLz4KPHN2ZyB4PSI4IiB5PSI4IiB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSI+CjxwYXRoIGQ9Ik0xMiAxMkM5Ljc5IDEyIDggMTAuMjEgOCA4UzkuNzkgNCA1IDRTMTYgNS43OSAxNiA4UzE0LjIxIDEyIDEyIDEyWk0xMiAxNEM3LjU4IDE0IDQgMTUuNzkgNCAyMFYyMkgyMFYyMEMxNiAxNS43OSAxNi40MiAxNCAxMiAxNFoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPgo8L3N2Zz4K">
+                </div>
+
+                <div class="chat-message assistant">
+                    <img class="avatar" alt="Layla" src="https://layla.ai/theme/layla/new-character-small.webp">
+                    <div class="message-content">
+                        Awesome! Let's get this trip started.
+
+                        First things first:
+
+                        <strong>Where would you like to go?</strong> (You can name a specific city, country, or region, or if you want, I can inspire you with some cool destinations nearby.)
+                        
+                        <button class="copy-button mt-2" onclick="copyMessage(this)">
+                            <img src="https://layla.ai/buttons/copy-black.svg" width="16" height="16" alt="copy">
+                        </button>
+                        
+                        <div class="quick-suggestions">
+                            <button class="quick-suggestion" onclick="selectDestination('Paris')">Paris</button>
+                            <button class="quick-suggestion" onclick="selectDestination('Tokyo')">Tokyo</button>
+                            <button class="quick-suggestion" onclick="selectDestination('New York')">New York</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Trip Plans Left Notice -->
+            <div class="fixed bottom-24 left-1/2 transform -translate-x-1/2 bg-white border border-gray-200 rounded-lg px-4 py-2 shadow-lg">
+                <div class="flex items-center gap-2 text-sm">
+                    <span>1 trip plan left</span>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="#FFD700">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                    <button class="text-primary font-medium">Get unlimited plans</button>
+                    <button class="ml-2 text-gray-400 hover:text-gray-600">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat Input -->
+    <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4">
+        <div class="max-w-4xl mx-auto">
+            <div class="flex items-end gap-3">
+                <div class="flex-1 relative">
+                    <textarea 
+                        id="chatInput"
+                        class="w-full resize-none border border-gray-300 rounded-lg px-4 py-3 pr-12 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                        placeholder="Type your message..."
+                        rows="1"
+                        style="max-height: 120px;"
+                    ></textarea>
+                    <button class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                        <img alt="microphone" width="20" height="20" src="https://layla.ai/microphone-icon.svg">
+                    </button>
+                </div>
+                <button 
+                    id="sendButton" 
+                    disabled
+                    class="bg-primary text-white p-3 rounded-lg hover:bg-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                    <img alt="send" width="20" height="20" src="https://layla.ai/_next/static/media/send.203578b9.svg">
+                </button>
+            </div>
+            
+            <div class="flex items-center justify-center mt-2 text-xs text-gray-500">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" class="mr-1">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                </svg>
+                I'd love to hear your suggestions for improvement. Click to share any feedback.
+            </div>
+        </div>
+    </div>
+
+    <!-- Trip Planning Process Modal -->
+    <div id="tripPlanningModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+        <div class="bg-white rounded-lg p-8 max-w-md mx-4">
+            <div class="text-center">
+                <img src="https://layla.ai/_next/static/media/new-character-medium.455f6dc5.png" alt="Layla" class="w-24 h-24 mx-auto mb-4">
+                <h2 class="text-xl font-bold mb-6">Designing your trip...</h2>
+                
+                <div class="space-y-3 text-left text-sm">
+                    <div class="flex items-center gap-3 process-step">
+                        <div class="w-2 h-2 bg-primary rounded-full"></div>
+                        <span>Share your trip idea</span>
+                    </div>
+                    <div class="flex items-center gap-3 process-step">
+                        <div class="w-2 h-2 bg-primary rounded-full"></div>
+                        <span>Refine it further with me</span>
+                    </div>
+                    <div class="flex items-center gap-3 process-step">
+                        <div class="w-2 h-2 bg-primary rounded-full"></div>
+                        <span>Get a first plan with everything in one place</span>
+                    </div>
+                    <div class="flex items-center gap-3 process-step">
+                        <div class="w-2 h-2 bg-primary rounded-full"></div>
+                        <span>Modify anything to make it more you</span>
+                    </div>
+                    <div class="flex items-center gap-3 process-step">
+                        <div class="w-2 h-2 bg-primary rounded-full"></div>
+                        <span>Add hidden gems, not tourist traps</span>
+                    </div>
+                    <div class="flex items-center gap-3 process-step">
+                        <div class="w-2 h-2 bg-primary rounded-full"></div>
+                        <span>Download itinerary pdf</span>
+                    </div>
+                    <div class="flex items-center gap-3 process-step">
+                        <div class="w-2 h-2 bg-primary rounded-full"></div>
+                        <span>Share with your companions</span>
+                    </div>
+                    <div class="flex items-center gap-3 process-step">
+                        <div class="w-2 h-2 bg-primary rounded-full"></div>
+                        <span>Save hours of planning</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Chat functionality
+        const chatInput = document.getElementById('chatInput');
+        const sendButton = document.getElementById('sendButton');
+        const chatMessages = document.getElementById('chatMessages');
+
+        // Auto-resize textarea
+        chatInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+            
+            sendButton.disabled = this.value.trim().length === 0;
+        });
+
+        // Send message on Enter
+        chatInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                if (!sendButton.disabled) {
+                    sendMessage();
+                }
+            }
+        });
+
+        sendButton.addEventListener('click', sendMessage);
+
+        function sendMessage() {
+            const message = chatInput.value.trim();
+            if (!message) return;
+
+            addUserMessage(message);
+            chatInput.value = '';
+            chatInput.style.height = 'auto';
+            sendButton.disabled = true;
+
+            // Show typing indicator
+            showTypingIndicator();
+
+            // Simulate AI response
+            setTimeout(() => {
+                hideTypingIndicator();
+                handleAIResponse(message);
+            }, 1500);
+        }
+
+        function addUserMessage(message) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'chat-message user';
+            messageDiv.innerHTML = `
+                <div class="message-content">${message}</div>
+                <img class="avatar" alt="User" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiM2Yjk0NGQiLz4KPHN2ZyB4PSI4IiB5PSI4IiB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSI+CjxwYXRoIGQ9Ik0xMiAxMkM5Ljc5IDEyIDggMTAuMjEgOCA4UzkuNzkgNCA1IDRTMTYgNS43OSAxNiA4UzE0LjIxIDEyIDEyIDEyWk0xMiAxNEM3LjU4IDE0IDQgMTUuNzkgNCAyMFYyMkgyMFYyMEMxNiAxNS43OSAxNi40MiAxNCAxMiAxNFoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPgo8L3N2Zz4K">
+            `;
+            chatMessages.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        function addAssistantMessage(message) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'chat-message assistant';
+            messageDiv.innerHTML = `
+                <img class="avatar" alt="Layla" src="https://layla.ai/theme/layla/new-character-small.webp">
+                <div class="message-content">
+                    ${message}
+                    <button class="copy-button mt-2" onclick="copyMessage(this)">
+                        <img src="https://layla.ai/buttons/copy-black.svg" width="16" height="16" alt="copy">
+                    </button>
+                </div>
+            `;
+            chatMessages.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        function showTypingIndicator() {
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'chat-message assistant';
+            typingDiv.id = 'typing-indicator';
+            typingDiv.innerHTML = `
+                <img class="avatar" alt="Layla" src="https://layla.ai/theme/layla/new-character-small.webp">
+                <div class="typing-indicator">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+            `;
+            chatMessages.appendChild(typingDiv);
+            scrollToBottom();
+        }
+
+        function hideTypingIndicator() {
+            const typingIndicator = document.getElementById('typing-indicator');
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
+        }
+
+        function handleAIResponse(userMessage) {
+            const lowerMessage = userMessage.toLowerCase();
+            let response = '';
+
+            if (lowerMessage.includes('paris')) {
+                response = `Great choice! Paris is incredible.<br><br><strong>How many days are you thinking?</strong> And who's traveling with you?`;
+            } else if (lowerMessage.includes('tokyo')) {
+                response = `Tokyo is amazing! Such a vibrant city with incredible food and culture.<br><br><strong>How many days would you like to spend there?</strong> And are you traveling solo, with a partner, or with family?`;
+            } else if (lowerMessage.includes('new york')) {
+                response = `New York City - the city that never sleeps! Perfect choice.<br><br><strong>How many days are you planning?</strong> And what's your travel style - first time visitor or looking for hidden gems?`;
+            } else if (lowerMessage.match(/\d+\s*(day|week)/)) {
+                showTripPlanningProcess();
+                return;
+            } else {
+                response = `I'd love to help you plan that trip! Can you tell me more about what you have in mind? Where would you like to go and for how long?`;
+            }
+
+            addAssistantMessage(response);
+        }
+
+        function selectDestination(destination) {
+            chatInput.value = destination;
+            sendMessage();
+        }
+
+        function copyMessage(button) {
+            const messageContent = button.parentElement.textContent.replace('copy', '').trim();
+            navigator.clipboard.writeText(messageContent).then(() => {
+                button.innerHTML = '<span class="text-green-600 text-xs">Copied!</span>';
+                setTimeout(() => {
+                    button.innerHTML = '<img src="https://layla.ai/buttons/copy-black.svg" width="16" height="16" alt="copy">';
+                }, 2000);
+            });
+        }
+
+        function showTripPlanningProcess() {
+            const modal = document.getElementById('tripPlanningModal');
+            modal.classList.remove('hidden');
+            
+            // Animate steps
+            const steps = modal.querySelectorAll('.process-step');
+            steps.forEach((step, index) => {
+                step.style.opacity = '0';
+                step.style.transform = 'translateX(-20px)';
+                setTimeout(() => {
+                    step.style.transition = 'all 0.5s ease';
+                    step.style.opacity = '1';
+                    step.style.transform = 'translateX(0)';
+                }, index * 200);
+            });
+
+            // Hide modal and show result after 4 seconds
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                showTripResult();
+            }, 4000);
+        }
+
+        function showTripResult() {
+            const result = `Perfect! I've created your personalized itinerary:<br><br>
+            <strong>🗼 Day 1-2: Iconic Paris</strong><br>
+            • Eiffel Tower & Seine River cruise<br>
+            • Louvre Museum (skip-the-line tickets)<br>
+            • Charming hotel in Le Marais<br><br>
+            
+            <strong>🎨 Day 3-4: Culture & Cuisine</strong><br>
+            • Montmartre & Sacré-Cœur<br>
+            • Food tour in Saint-Germain<br>
+            • Evening at a traditional bistro<br><br>
+            
+            <strong>🏰 Day 5: Versailles Day Trip</strong><br>
+            • Palace of Versailles tour<br>
+            • Gardens and Marie Antoinette's estate<br><br>
+            
+            <strong>Included:</strong><br>
+            ✅ 5-star hotel bookings<br>
+            ✅ All attraction tickets<br>
+            ✅ Restaurant reservations<br>
+            ✅ Metro passes<br>
+            ✅ 24/7 travel support<br><br>
+            
+            <strong>Total: €2,400 for 2 people</strong><br><br>
+            
+            Would you like me to book this or make any changes?`;
+
+            addAssistantMessage(result);
+            
+            // Add action buttons
+            setTimeout(() => {
+                addActionButtons();
+            }, 1000);
+        }
+
+        function addActionButtons() {
+            const buttonsDiv = document.createElement('div');
+            buttonsDiv.className = 'flex gap-3 mt-4 justify-center';
+            buttonsDiv.innerHTML = `
+                <button class="bg-primary text-white px-6 py-2 rounded-full hover:bg-primary-500 transition-colors" onclick="bookTrip()">
+                    Book This Trip
+                </button>
+                <button class="border border-primary text-primary px-6 py-2 rounded-full hover:bg-primary hover:text-white transition-colors" onclick="modifyTrip()">
+                    Modify Itinerary
+                </button>
+                <button class="border border-gray-300 text-gray-700 px-6 py-2 rounded-full hover:bg-gray-50 transition-colors" onclick="downloadPDF()">
+                    Download PDF
+                </button>
+            `;
+            
+            const lastMessage = chatMessages.lastElementChild;
+            lastMessage.appendChild(buttonsDiv);
+        }
+
+        function bookTrip() {
+            addAssistantMessage("Great! I'll help you book this trip. Let me connect you with our booking partners for the best rates. You'll be redirected to secure booking pages for each component.");
+        }
+
+        function modifyTrip() {
+            addAssistantMessage("Of course! What would you like to change? I can adjust the hotels, activities, duration, or add/remove destinations. Just let me know what you have in mind!");
+        }
+
+        function downloadPDF() {
+            addAssistantMessage("Perfect! I'm generating your detailed PDF itinerary with all bookings, addresses, and contact information. You'll receive it via email in just a moment!");
+        }
+
+        function scrollToBottom() {
+            setTimeout(() => {
+                window.scrollTo(0, document.body.scrollHeight);
+            }, 100);
+        }
+
+        // Initialize
+        scrollToBottom();
+    </script>
+</body>
+</html>

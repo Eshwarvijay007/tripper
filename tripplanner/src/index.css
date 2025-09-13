@@ -1,0 +1,324 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Exact TripPlanner.ai & Layla.ai React Clone Styles */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+/* CSS Variables - Exact from originals */
+:root {
+    --primary: #6366f1;
+    --primary-purple: #8b5cf6;
+    --primary-purple-2: #7c3aed;
+    --primary-green: #10b981;
+    --accent-green: #059669;
+    --accent-green-2: #047857;
+    --accent-red: #ef4444;
+    --accent-red-2: #dc2626;
+    --background: #f9fafb;
+    
+    /* Layla colors */
+    --colors-primary: #21BCBE;
+    --primary-400: #21BCBE;
+    --primary-500: #1da5a7;
+}
+
+@layer base {
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    line-height: 1.6;
+    color: #374151;
+    background-color: #ffffff;
+    overflow-x: hidden;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  .__className_d37563 {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+
+  .__className_19640c {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+}
+
+@layer components {
+  /* Header animations - Exact from TripPlanner.ai */
+  .header-blur {
+    backdrop-filter: blur(10px);
+    background-color: rgba(255, 255, 255, 0.9);
+    border-bottom: 1px solid rgba(229, 231, 235, 0.3);
+  }
+
+  /* Hero section animations - Exact timing */
+  .hero-title {
+    animation: fadeInUp 1s ease-out;
+  }
+
+  .hero-subtitle {
+    animation: fadeInUp 1s ease-out 0.2s both;
+  }
+
+  .hero-cta {
+    animation: fadeInUp 1s ease-out 0.4s both;
+    transition: all 0.3s ease;
+  }
+
+  .hero-cta:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(5, 150, 105, 0.3);
+  }
+
+  /* Partner carousel - Exact from original */
+  .partner-carousel {
+    overflow: hidden;
+    width: 100%;
+  }
+
+  .partner-track {
+    display: flex;
+    animation: scroll 20s linear infinite;
+    width: calc(200px * 8);
+  }
+
+  .partner-slide {
+    flex: 0 0 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 2rem;
+  }
+
+  @keyframes scroll {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
+  }
+
+  /* Lazy loading animations - Exact cubic-bezier */
+  .lazy-div {
+    opacity: 0;
+    transform: translateX(-50px) translateZ(0);
+    transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
+  .lazy-div.visible {
+    opacity: 1;
+    transform: translateX(0) translateZ(0);
+  }
+
+  /* Trip cards hover effects - Exact */
+  .trip-card {
+    transition: all 0.3s ease;
+  }
+
+  .trip-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  }
+
+  .feature-card {
+    transition: all 0.3s ease;
+  }
+
+  .feature-card:hover {
+    transform: translateY(-5px);
+  }
+
+  /* Button animations - Exact */
+  .btn-hover {
+    transition: all 0.3s ease;
+  }
+
+  .btn-hover:hover {
+    transform: translateY(-2px);
+  }
+
+  /* Mobile create trip button - Exact */
+  .mobile-create-btn {
+    transform: translateY(100px);
+    transition: transform 0.3s ease;
+  }
+
+  .mobile-create-btn.visible {
+    transform: translateY(0);
+  }
+
+  /* Layla.ai specific styles */
+  .SideBar_sidebar__vZknt {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(229, 231, 235, 0.3);
+  }
+
+  .SideBarHeader_sidebar_header__aUEB5 {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .SideBarHeader_sidebar_logo_wrapper__5_FSQ {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .MuiAvatar-root {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 1.25rem;
+    line-height: 1;
+    border-radius: 50%;
+    overflow: hidden;
+    user-select: none;
+  }
+
+  .LaylaLogo_container__PnRkX {
+    display: flex;
+    align-items: center;
+  }
+
+  /* Chat styles */
+  .chat-message {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .chat-message.user {
+    flex-direction: row-reverse;
+  }
+
+  .chat-message .avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .chat-message .message-content {
+    max-width: 70%;
+    padding: 12px 16px;
+    border-radius: 18px;
+    position: relative;
+  }
+
+  .chat-message.assistant .message-content {
+    background-color: #f3f4f6;
+    color: #000;
+  }
+
+  .chat-message.user .message-content {
+    background-color: var(--colors-primary);
+    color: white;
+  }
+
+  .copy-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+  }
+
+  .copy-button:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+  }
+
+  .quick-suggestions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+  }
+
+  .quick-suggestion {
+    padding: 6px 12px;
+    background-color: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .quick-suggestion:hover {
+    background-color: var(--colors-primary);
+    color: white;
+    border-color: var(--colors-primary);
+  }
+
+  .typing-indicator {
+    display: flex;
+    gap: 4px;
+    padding: 12px 16px;
+    background-color: #f3f4f6;
+    border-radius: 18px;
+  }
+
+  .typing-dot {
+    width: 8px;
+    height: 8px;
+    background-color: #9ca3af;
+    border-radius: 50%;
+    animation: typing 1.4s infinite ease-in-out;
+  }
+
+  .typing-dot:nth-child(2) {
+    animation-delay: 0.2s;
+  }
+
+  .typing-dot:nth-child(3) {
+    animation-delay: 0.4s;
+  }
+
+  @keyframes typing {
+    0%, 60%, 100% {
+      transform: translateY(0);
+    }
+    30% {
+      transform: translateY(-10px);
+    }
+  }
+
+  @keyframes fadeInUp {
+    0% {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+}
