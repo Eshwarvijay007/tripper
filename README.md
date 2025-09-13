@@ -61,3 +61,4 @@ Notes & Next Steps
 - Validation: Add tighter validation and enums for interests, pace, filters.
 - Booking.com hotels: Provide the hotel listing/availability endpoint(s) cURL to wire `/api/search/hotels` to live data. We already support destination resolution via `/api/booking/destinations`.
 - Google Places: `/api/search/poi` will return nearby attractions when `location.lat/lon` is provided. Remember to display Places results on a Google Map and follow attribution/retention terms.
+
