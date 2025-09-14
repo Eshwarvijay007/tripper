@@ -1,19 +1,22 @@
 
 import React, { useState } from 'react';
+import allepyImg from '../assets/images/Goa.jpeg';
+import keralaImg from '../assets/images/kerala.jpeg';
+import munnarImg from '../assets/images/kedarnath.jpeg';
 import { motion } from 'framer-motion';
 
 const whyLayla = [
   {
-    image: 'https://firebasestorage.googleapis.com/v0/b/bd-app-dev-375714.appspot.com/o/homepage_configs%2FHome%20Page%2FJapan%20Couple%20Trip%20.jpg?alt=media&token=a5a44574-b1b3-444e-90b7-a815921035d6',
-    text: 'We just got engaged and crave six days of pure zen - think autumn-coloured gardens, private hot-spring soaks and a hands-on sushi lesson this October',
+    image: allepyImg,
+    text: 'Turning the big 3-0 with my Cuties! Hook us up with a four-day Malabar Coast trip—we want lots of beach time, chill homestays, and a sunset cruise.',
   },
   {
-    image: 'https://layla.ai/_next/static/media/progressive_image_placeholder.28d15427.webp',
-    text: 'It’s my 30th with five besties, give us four sun-drenched days of turquoise swims, villa pool parties and sunset boat cruises in July',
+    image: keralaImg,
+    text: 'Just married! My wife and I are ready for our first big adventure. Give us a four-day Kerala backwater trip with a luxurious houseboat and plenty of special moments to kick off our life together.',
   },
   {
-    image: 'https://layla.ai/_next/static/media/progressive_image_placeholder.28d15427.webp',
-    text: 'Dad and I have always dreamed of spotting the Big Five. Plan an eight-day road-trip next month with whale watching, self-drive safaris and cosy budget lodges.',
+    image: munnarImg,
+    text: 'My family and I have always dreamed of a spiritual journey. Plan an eight-day pilgrimage with temple visits, serene ashrams, and peaceful budget stays.',
   },
 ];
 
