@@ -7,11 +7,12 @@ import LaylaCtaSection from '../components/LaylaCtaSection';
 import LaylaTopTripsSection from '../components/LaylaTopTripsSection';
 import LaylaFeaturesSection from '../components/LaylaFeaturesSection';
 import TripPlannerFeaturesSection from '../components/TripPlannerFeaturesSection';
+import LaylaFooter from '../components/LaylaFooter';
 import './layla.css';
 
 const LaylaPage = () => {
   return (
-    <div className="layla-page min-h-screen">
+    <div className="layla-page min-h-screen flex flex-col">
       <LaylaHeroSection />
       <LaylaPromptSection />
       <LaylaHowItWorksSection />
@@ -20,6 +21,7 @@ const LaylaPage = () => {
       <LaylaCtaSection />
       <LaylaTopTripsSection />
       <LaylaFeaturesSection />
+      <LaylaFooter />
     </div>
   );
 };
