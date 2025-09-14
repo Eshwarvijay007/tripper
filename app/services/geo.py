@@ -5,7 +5,9 @@ from app.schemas.common import Location
 from app.providers import booking_rapidapi as booking
 from app.providers import google_places
 from haversine import haversine, Unit
+import logging
 
+logger = logging.getLogger(__name__)
 
 def _pick_city_like(items: List[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
     for it in items:
