@@ -99,10 +99,13 @@ export async function getBookingDestinations(query) {
   return res.json();
 }
 
-export async function getPlacesSuggestions(query) {
+export async function getPlacesSuggestions(query, { signal } = {}) {
   const url = `${API_BASE}/api/places/suggest?query=${encodeURIComponent(query)}`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`Places suggest failed ${res.status}`);
+  const res = await fetch(url, { signal, headers: { Accept: 'application/json' } });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Places suggest failed ${res.status}: ${text}`);
+  }
   return res.json();
 }
 
