@@ -39,7 +39,11 @@ def _worker(run_id: str, req: TripCreateRequest) -> None:
         for update in graph.stream(init_state, config=config, stream_mode="updates"):
             for node_name, delta in update.items():
                 if isinstance(delta, dict):
-                    acc_state.update({k: v for k, v in delta.items() if v is not None})
+                    for k, v in delta.items():
+                        if v is None:
+                            acc_state.pop(k, None)
+                        else:
+                            acc_state[k] = v
                     changed = list(delta.keys())
                 else:
                     changed = []
