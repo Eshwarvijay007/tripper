@@ -30,7 +30,7 @@ const FeaturesSection = () => {
       <section className="bg-background mb-12 mt-5 py-8 md:mt-10" id="product">
         <div className="container m-8 mx-auto max-w-5xl">
           <h2 className="px-6 text-center text-3xl font-bold md:text-4xl lg:px-12 xl:text-5xl">
-            What Makes Our <span className="text-primary-purple">AI Trip Planner</span> Different
+              every journey has a storyteller.yours is Naomi
           </h2>
           <p className="mt-10 px-3 text-center text-gray-600">
             Planning a trip can feel overwhelming. <strong className="text-black">Too many tabs, hours of research, no clear starting point.</strong> That's where Tripplanner.ai comes in, our AI understands your travel needs, using live data and smart itineraries to match your style, budget, and timing. From flights to hotels to activities, we handle the whole process so you can focus on the journey, not the research.

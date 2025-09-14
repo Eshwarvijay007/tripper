@@ -6,6 +6,7 @@ import LaylaWhySection from '../components/LaylaWhySection';
 import LaylaCtaSection from '../components/LaylaCtaSection';
 import LaylaTopTripsSection from '../components/LaylaTopTripsSection';
 import LaylaFeaturesSection from '../components/LaylaFeaturesSection';
+import TripPlannerFeaturesSection from '../components/TripPlannerFeaturesSection';
 import './layla.css';
 
 const LaylaPage = () => {
@@ -15,6 +16,7 @@ const LaylaPage = () => {
       <LaylaPromptSection />
       <LaylaHowItWorksSection />
       <LaylaWhySection />
+      <TripPlannerFeaturesSection transparent />
       <LaylaCtaSection />
       <LaylaTopTripsSection />
       <LaylaFeaturesSection />
