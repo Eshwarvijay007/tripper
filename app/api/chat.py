@@ -40,7 +40,8 @@ def _stream_assistant(conv_id: str) -> Iterator[bytes]:
         return
 
     # Stream: start → single assistant reply → done
-    yield (str({"event": "start", "conversation_id": conv_id}) + "\n").encode("utf-8")
+    import json
+    yield (json.dumps({"event": "start", "conversation_id": conv_id}) + "\n").encode("utf-8")
     try:
         config = {"configurable": {"thread_id": conv_id}}
         out = graph.invoke({"messages": [HumanMessage(content=user_msg["content"])]}, config=config)
@@ -50,10 +51,10 @@ def _stream_assistant(conv_id: str) -> Iterator[bytes]:
         for m in msgs:
             if getattr(m, "type", None) == "ai":
                 text = getattr(m, "content", "") or ""
-        yield (str({"event": "message", "role": "assistant", "content": text}) + "\n").encode("utf-8")
-        yield (str({"event": "done"}) + "\n").encode("utf-8")
-    except Exception as e:
-        yield (str({"event": "error", "message": str(e)}) + "\n").encode("utf-8")
+        yield (json.dumps({"event": "message", "role": "assistant", "content": text}) + "\n").encode("utf-8")
+        yield (json.dumps({"event": "done"}) + "\n").encode("utf-8")
+    except RuntimeError as e:
+        yield (json.dumps({"event": "error", "message": str(e)}) + "\n").encode("utf-8")
 
 
 @router.get("/stream/{conversation_id}")
