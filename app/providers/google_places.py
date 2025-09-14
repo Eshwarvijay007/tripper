@@ -113,6 +113,7 @@ def text_search(query: str, *, language: str | None = None, region: str | None =
                 "lon": lon,
                 "types": types,
                 "photo": photo_url,
+                "photo_ref": photo_ref,
                 "city_name": city_name,
                 "country": country,
             }
