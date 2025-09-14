@@ -97,8 +97,8 @@ class LangGraphAPI:
         """Proxy the remote event stream as bytes."""
         url = self._stream_url(run_id)
         headers = self._headers()
-        # Many LangGraph streams are SSE; keep headers permissive
-        headers.setdefault("Accept", "text/event-stream, application/json;q=0.9, */*;q=0.8")
+        # Many LangGraph streams are SSE; prefer SSE but allow fallbacks
+        headers["Accept"] = "text/event-stream, application/json;q=0.9, */*;q=0.8"
         with requests.get(url, headers=headers, stream=True, timeout=300) as r:
             r.raise_for_status()
             for chunk in r.iter_content(chunk_size=None):
