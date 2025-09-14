@@ -157,6 +157,12 @@ const FinalTripPlannerPage = () => {
       const itinerary = res.itinerary;
       const hotelOptions = res.hotel_options || [];
       // Render itinerary as a card
+      // Pick top-rated stay for a hero card
+      let topHotel = null;
+      if (hotelOptions.length) {
+        topHotel = [...hotelOptions].sort((a, b) => (b.stars || 0) - (a.stars || 0))[0];
+      }
+
       setCards([
         {
           id: `${Date.now()}`,
@@ -164,9 +170,7 @@ const FinalTripPlannerPage = () => {
           title: itinerary.trip_title || 'Planned Itinerary',
           itinerary,
         },
-        ...(hotelOptions.length
-          ? [{ id: `${Date.now()}_h`, type: 'hotels', title: 'Hotels', items: hotelOptions }]
-          : []),
+        ...(topHotel ? [{ id: `${Date.now()}_hs`, type: 'hotel_single', title: 'Your Stay', item: topHotel }] : []),
       ]);
 
       // Place markers from activities if present
@@ -178,6 +182,10 @@ const FinalTripPlannerPage = () => {
             markers.push({ lat: loc.lat, lon: loc.lon, title: a.name });
           }
         }
+      }
+      // Add map marker for selected stay (if any)
+      if (topHotel && typeof topHotel.lat === 'number' && typeof topHotel.lon === 'number') {
+        markers.push({ lat: topHotel.lat, lon: topHotel.lon, title: topHotel.name });
       }
       if (markers.length) setMapMarkers(markers);
     } catch (e) {

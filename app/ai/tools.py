@@ -42,6 +42,8 @@ def tool_search_hotels(req: HotelSearchRequest) -> Dict[str, Any]:
             rating = pl.get("rating")
             price_level = pl.get("price_level")
             photo = pl.get("photo")
+            lat = pl.get("lat")
+            lon = pl.get("lon")
             # Fetch details for summary and potentially better photo
             try:
                 details = google_places.place_details_v1(place_id) if place_id else {}
@@ -65,6 +67,8 @@ def tool_search_hotels(req: HotelSearchRequest) -> Dict[str, Any]:
                     "neighborhood": pl.get("formatted_address"),
                     "price_per_night": Money(amount=round(amount, 2), currency=Currency(currency)).model_dump(),
                     "deeplink": None,
+                    **({"lat": lat} if isinstance(lat, (int, float)) else {}),
+                    **({"lon": lon} if isinstance(lon, (int, float)) else {}),
                     **({"photo": photo} if photo else {}),
                     **({"description": editorial} if editorial else {}),
                 }
