@@ -67,8 +67,14 @@ def agent_plan(payload: Dict[str, Any]) -> Dict[str, Any]:
 
     # Compile and run the local LangGraph itinerary planner
     graph = build_graph().compile()
-    out: Dict[str, Any] = graph.invoke(init_state)  # type: ignore
-
+    try:
+        out: Dict[str, Any] = graph.invoke(init_state)  # type: ignore
+    except Exception as e:
+        return {
+            "need_info": True,
+            "questions": [f"Planning failed: {e}"],
+            "state": {k: v for k, v in init_state.items() if v is not None},
+        }
     # If the planner surfaced an error (e.g., LLM failure), present it as a follow-up message
     if out.get("error"):
         msg = str(out.get("error"))
