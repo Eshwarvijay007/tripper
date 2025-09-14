@@ -13,7 +13,12 @@ def node_retrieve_pois(state: PlanState) -> PlanState:
         d0 = dests[0]
         if d0.get("lat") is not None and d0.get("lon") is not None:
             req = PoiSearchRequest(location=Location(**d0))
-            poi_items = tool_search_poi(req).get("items", [])
+            resp = tool_search_poi(req)
+            poi_items = resp.get("items", [])
+            if err := resp.get("error"):
+                state["error"] = err
+        else:
+            state["need_info"] = True
     state["poi_candidates"] = poi_items
     state["next"] = "plan_days"
     return state
