@@ -103,7 +103,7 @@ def search_hotels_node(state: MessagesState) -> MessagesState:
     params = state.get("params") or {}
     loc_in = params.get("location") or {}
     dr_in = params.get("date_range") or {}
-    currency = params.get("currency") or "USD"
+    currency = params.get("currency") or "INR"
     loc = None
     if isinstance(loc_in, dict) and (loc_in.get("city") or (loc_in.get("lat") is not None and loc_in.get("lon") is not None)):
         base = Location(**{k: loc_in.get(k) for k in ("city", "country", "lat", "lon") if k in loc_in})

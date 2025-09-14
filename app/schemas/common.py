@@ -9,6 +9,7 @@ class Currency(str, Enum):
     USD = "USD"
     EUR = "EUR"
     GBP = "GBP"
+    INR = "INR"
 
 
 class CabinClass(str, Enum):
@@ -20,7 +21,7 @@ class CabinClass(str, Enum):
 
 class Money(BaseModel):
     amount: float
-    currency: Currency = Currency.USD
+    currency: Currency = Currency.INR
 
 
 class DateRange(BaseModel):

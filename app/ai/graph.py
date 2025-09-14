@@ -77,7 +77,7 @@ class PlannerRunner:
                 rooms=1,
                 adults=2,
                 children=0,
-                currency=state.currency or "USD",
+                currency=state.currency or "INR",
             )
             h_res = tool_search_hotels(h_req)
             hotel_opts = h_res.get("options", [])[:5]
@@ -93,7 +93,7 @@ class PlannerRunner:
                 destination=dest0,
                 dates=DateRange(start=state.date_range.start, end=state.date_range.start),
                 adults=1,
-                currency=state.currency or "USD",
+                currency=state.currency or "INR",
             )
             flight_opts = tool_search_flights(f_req).get("options", [])
         state.flight_options = flight_opts

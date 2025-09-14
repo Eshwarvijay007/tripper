@@ -102,7 +102,7 @@ class BudgetRange(BaseModel):
     """Budget range for the trip"""
     min_amount: Optional[float] = None
     max_amount: Optional[float] = None
-    currency: str = "USD"
+    currency: str = "INR"
     per_person: bool = True
     
     @field_validator('min_amount', 'max_amount')
