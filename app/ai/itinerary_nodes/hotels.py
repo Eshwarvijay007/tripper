@@ -13,9 +13,11 @@ def node_search_hotels(state: PlanState) -> PlanState:
         state["next"] = "finalize"
         return state
     # Build typed request; ensure valid dates
+from pydantic import ValidationError
+
     try:
         dates = DateRange(**dr)  # type: ignore
-    except Exception:
+    except ValidationError:
         state["hotel_options"] = []
         state["next"] = "finalize"
         return state
