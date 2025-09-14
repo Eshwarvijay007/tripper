@@ -36,11 +36,8 @@ class LangGraphAPI:
         self.auth_scheme = os.getenv("LANGRAPH_AUTH_SCHEME")  # e.g., "Bearer"
 
     def is_enabled(self) -> bool:
-        if self.remote_flag:
-            return True
-        # Enable if base+graph+key are present
-        return bool(self.base and self.graph_id and self.api_key)
-
+        can_build = bool(self.start_url_override or (self.base and self.graph_id))
+        return bool(self.api_key and can_build)
     # URL builders (with sensible defaults for LangGraph Cloud-style APIs)
     def _start_url(self) -> str:
         if self.start_url_override:
