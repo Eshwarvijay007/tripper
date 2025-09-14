@@ -3,6 +3,7 @@ from app.ai.tools import tool_search_hotels
 from app.schemas.search import HotelSearchRequest
 from app.schemas.common import DateRange, Location
 from .state import PlanState
+from pydantic import ValidationError
 
 
 def node_search_hotels(state: PlanState) -> PlanState:
@@ -13,8 +14,6 @@ def node_search_hotels(state: PlanState) -> PlanState:
         state["next"] = "finalize"
         return state
     # Build typed request; ensure valid dates
-from pydantic import ValidationError
-
     try:
         dates = DateRange(**dr)  # type: ignore
     except ValidationError:
