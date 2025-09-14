@@ -85,4 +85,4 @@ def gemini_text(
         resp = model_client.generate_content(parts)
         return resp.text or ""
     except Exception as e:  # pragma: no cover
-        raise RuntimeError(f"Gemini text generation failed: {e}")
+        raise RuntimeError("Gemini text generation failed") from e
