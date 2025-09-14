@@ -212,7 +212,7 @@ const FinalTripPlannerPage = () => {
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-[30%_70%] min-h-0 pt-12">
         {/* Center/Left: Chat panel */}
         <div className="min-h-0">
-          <div className="sticky top-14 h-[calc(100vh-3.5rem)] border-r bg-white">
+          <div className="sticky top-14 h-[calc(100vh-3.5rem)] border-r bg-[var(--brand-color)]">
             <ChatPanel onQuickAction={(label) => {
               const lower = label.toLowerCase();
               if (lower.includes('hotel')) {
@@ -302,7 +302,7 @@ const FinalTripPlannerPage = () => {
                   </div>
                 ))}
               </div>
-              <div className="min-h-0 relative">
+              <div className="min-h-0 h-full relative -mt-2 -mr-1 -mb-3 md:-mt-3 md:-mr-1 md:-mb-4">
                 <Map fullHeight markers={mapMarkers} />
               </div>
             </div>

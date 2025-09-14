@@ -27,7 +27,7 @@ const ChatPanel = ({ onQuickAction, onUserMessage }) => {
   };
 
   return (
-    <section className="relative h-full bg-white">
+    <section className="relative h-full bg-transparent">
       {/* Scrollable region (messages + quick replies) with reserved bottom space for input */}
       <div className="absolute inset-x-0 top-0 bottom-20 overflow-y-auto px-4 pt-4 pb-2">
         {messages.map((msg, index) => (
