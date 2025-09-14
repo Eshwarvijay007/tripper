@@ -27,9 +27,9 @@ def node_check_missing(state: PlanState) -> PlanState:
     nval = state.get("nights")
     try:
         nint = int(nval) if nval is not None else None
-    except Exception:
+    except (ValueError, TypeError):
         nint = None
-    if nint is not None and (nint < 1 or nint > 365):
+    if nint is not None and (nint < 1 or nint > 21):
         nint = None
     if nint is None:
         state.pop("nights", None)
