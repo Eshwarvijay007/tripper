@@ -18,9 +18,14 @@ def node_plan_days(state: PlanState) -> PlanState:
     except Exception:
         nights = None
 
+    if nights is None or nights <= 0:
+        state["need_info"] = True
+        state["questions"] = ["Trip length is missing or invalid. Please provide dates or nights (1–21)."]
+        state["next"] = "finalize"
+        return state
+
     dests = state.get("destinations") or []
     dest_label = (dests[0].get("city") if dests else None) or (dests[0].get("country") if dests else None) or "destination"
-
     try:
         poi_lines = []
         for p in poi_items[:60]:
