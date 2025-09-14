@@ -15,7 +15,7 @@ def _configure() -> None:
     global _configured
     if _configured:
         return
-    api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GEMINI_API_KEY")
+    api_key = os.getenv("GEMINI_API_KEY")
     if not api_key:
         # Defer strict error so the app can start without LLM usage
         return
