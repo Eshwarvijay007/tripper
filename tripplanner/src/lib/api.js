@@ -116,11 +116,12 @@ export async function getNearbyAttractions({ lat, lon }) {
   return res.json();
 }
 
-export async function agentPlan(payload) {
+export async function agentPlan(payload, { signal } = {}) {
   const res = await fetch(`${API_BASE}/api/agent/plan`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
     body: JSON.stringify(payload),
+    signal,
   });
   if (!res.ok) {
     const text = await res.text();
