@@ -1,13 +1,13 @@
 import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Globe2, Briefcase, Users, FileText, Send } from 'lucide-react';
 import { postChatMessage, streamChat } from '../lib/api';
 import { ChatContext } from '../context/ChatContext';
 
 const LaylaPromptSection = () => {
   const [inputValue, setInputValue] = useState('');
-  const { messages, addMessage, updateLastMessage } = useContext(ChatContext);
+  const { addMessage } = useContext(ChatContext);
   const [isTyping, setIsTyping] = useState(false);
   const [conversationId, setConversationId] = useState(null);
   const navigate = useNavigate();
@@ -87,45 +87,7 @@ const LaylaPromptSection = () => {
               </button>
             ))}
           </div>
-          <AnimatePresence>
-            <div className="w-full max-w-3xl">
-              {messages.map((msg, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className={`flex items-start gap-3 my-4 ${
-                    msg.sender === 'user' ? 'justify-end' : 'justify-start'
-                  }`}>
-                  {msg.sender === 'assistant' && <img src="https://layla.ai/theme/layla/new-character-small.webp" alt="Layla" className="w-8 h-8 rounded-full" />}
-                  <div
-                    className={`rounded-lg px-4 py-2 max-w-lg ${
-                      msg.sender === 'user' ? 'bg-primary-green text-white' : 'bg-gray-200 text-layla-foreground'
-                    }`}>
-                    {msg.text}
-                  </div>
-                  {msg.sender === 'user' && <div className="w-8 h-8 rounded-full bg-gray-400"></div>}
-                </motion.div>
-              ))}
-              {isTyping && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="flex items-start gap-3 my-4 justify-start"
-                >
-                  <img src="https://layla.ai/theme/layla/new-character-small.webp" alt="Layla" className="w-8 h-8 rounded-full" />
-                  <div className="bg-gray-200 rounded-lg px-4 py-2 max-w-lg flex items-center">
-                    <div className="typing-indicator">
-                      <div className="typing-dot"></div>
-                      <div className="typing-dot"></div>
-                      <div className="typing-dot"></div>
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-            </div>
-          </AnimatePresence>
+          {/* Conversation renders only on /trip; Layla page is input-only */}
         </div>
       </div>
     </motion.section>

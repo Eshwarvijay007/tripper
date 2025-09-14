@@ -10,7 +10,7 @@ import './layla.css';
 
 const LaylaPage = () => {
   return (
-    <div>
+    <div className="layla-page min-h-screen">
       <LaylaHeroSection />
       <LaylaPromptSection />
       <LaylaHowItWorksSection />
