@@ -5,7 +5,9 @@ from app.schemas.search import HotelSearchRequest, FlightSearchRequest, PoiSearc
 from app.schemas.common import Money, Currency
 from app.providers import booking_rapidapi as booking
 from app.providers import google_places
+import logging
 
+logger = logging.getLogger(__name__)
 
 def tool_search_hotels(req: HotelSearchRequest) -> Dict[str, Any]:
     """Search hotels/lodging.
