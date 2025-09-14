@@ -10,10 +10,13 @@ const SimpleCard = ({ image, title, text }) => (
   <div className="group w-full max-w-sm md:max-w-md mx-auto rounded-2xl border border-black/5 shadow-sm overflow-hidden bg-white">
     <div className="relative w-full h-[28rem] md:h-[32rem] p-2 flex items-center justify-center bg-white">
       <img src={image} alt={title} className="h-full w-auto max-w-full object-contain rounded-2xl" />
-      <div className="absolute inset-0 rounded-xl bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-        <div className="text-white font-semibold drop-shadow-sm">{title}</div>
-        {text && <p className="text-white/90 text-sm mt-1 leading-relaxed">{text}</p>}
+      {/* Gradient overlay from bottom on hover */}
+      <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-gradient-to-t from-black/70 via-black/25 to-transparent" />
+      {/* Text block with subtle motion */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 p-4 md:p-5 translate-y-2 opacity-0 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-200">
+        <div className="text-white/90 text-xs uppercase tracking-wider">Discover</div>
+        <div className="text-white font-semibold text-lg md:text-xl leading-snug drop-shadow-sm">{title}</div>
+        {text && <p className="text-white/90 text-xs md:text-sm mt-1.5 leading-relaxed">{text}</p>}
       </div>
     </div>
   </div>
@@ -39,8 +42,12 @@ const LaylaTopTripsSection = () => {
     >
       <div className="container mx-auto gap-10 md:gap-12">
         <div className="flex flex-col items-center gap-10 md:gap-12">
-          <div className="section-title-gap-lg mx-auto flex max-w-xl flex-col items-center text-center">
-            <h2 id="blog-section-heading" className="heading-lg text-layla-foreground">Top Trips to Level Up Your Vacation Game</h2>
+          <div className="mx-auto flex max-w-3xl flex-col items-center text-center">
+            <div className="text-xs uppercase tracking-wider text-gray-500">Curated Picks</div>
+            <h2 id="blog-section-heading" className="text-2xl md:text-3xl font-semibold leading-tight text-gray-900">
+              Top Trips to Level Up Your Vacation Game
+            </h2>
+            <div className="mt-3 h-px w-16 bg-black/10" />
           </div>
           <div className="grid grid-cols-1 gap-12 sm:grid-cols-2 lg:grid-cols-3">
             {cards.map((c, i) => (
