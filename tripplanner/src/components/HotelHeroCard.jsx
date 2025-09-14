@@ -12,7 +12,6 @@ const HotelHeroCard = ({ hotel }) => {
     price_per_night,
     stars,
     neighborhood,
-    description,
   } = hotel;
 
   const img = image_url || photo;
@@ -36,9 +35,6 @@ const HotelHeroCard = ({ hotel }) => {
             <div className="text-xs px-2 py-1 rounded bg-yellow-100 text-yellow-800 whitespace-nowrap">{stars}★</div>
           )}
         </div>
-        {description && (
-          <p className="mt-3 text-sm text-gray-700">{description}</p>
-        )}
         {price_per_night && (
           <div className="mt-2 text-sm">
             <span className="font-medium">{price_per_night.currency} {price_per_night.amount}</span>
@@ -51,3 +47,4 @@ const HotelHeroCard = ({ hotel }) => {
 };
 
 export default HotelHeroCard;
+

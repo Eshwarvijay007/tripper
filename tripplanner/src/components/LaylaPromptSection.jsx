@@ -19,7 +19,7 @@ const LaylaPromptSection = () => {
     addMessage({ text, sender: 'user' });
     setInputValue('');
     setChatDisabled(true);
-    navigate('/trip', { state: { initialQuery: text } });
+    navigate('/trip');
   };
 
   const quickActions = [
