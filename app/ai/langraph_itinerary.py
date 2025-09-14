@@ -279,31 +279,14 @@ def node_plan_days(state: PlanState) -> PlanState:
             plans.append(DayPlan(index=len(plans), summary=f"Day {len(plans)+1} in {dest_label}", activities=[]).model_dump())
         state["day_plans"] = plans
         return state
-    except Exception:
-        # Fallback heuristic
-        day_plans: List[dict] = []
-        per_day = max(1, min(6, (len(poi_items) // max(1, nights)) or 4))
-        idx = 0
-        for d in range(nights):
-            acts: List[dict] = []
-            for _ in range(per_day):
-                if idx < len(poi_items):
-                    p = poi_items[idx]
-                    idx += 1
-                    acts.append(
-                        Activity(
-                            id=str(uuid4()),
-                            name=p.get("name") or "Attraction",
-                            category=p.get("category") or "attraction",
-                            location=Location(lat=p.get("lat"), lon=p.get("lon")),
-                            notes="Auto-selected based on popularity",
-                            source="google_places",
-                        ).model_dump()
-                    )
-            day_plans.append(
-                DayPlan(index=d, summary=f"Highlights in {dest_label}", activities=[Activity(**a) for a in acts]).model_dump()
-            )
-        state["day_plans"] = day_plans
+    except Exception as e:
+        # Do not apply heuristic fallback; surface an actionable message instead
+        state["day_plans"] = []
+        state["need_info"] = True
+        state["questions"] = [
+            f"LLM planning failed. Please try again or adjust your request. ({str(e)})"
+        ]
+        state["error"] = f"LLM planning failed: {str(e)}"
         return state
 
 

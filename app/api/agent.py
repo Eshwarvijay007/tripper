@@ -69,6 +69,30 @@ def agent_plan(payload: Dict[str, Any]) -> Dict[str, Any]:
     graph = build_graph().compile()
     out: Dict[str, Any] = graph.invoke(init_state)  # type: ignore
 
+    # If the planner surfaced an error (e.g., LLM failure), present it as a follow-up message
+    if out.get("error"):
+        msg = str(out.get("error"))
+        return {
+            "need_info": True,
+            "questions": [msg],
+            "state": {
+                k: out.get(k)
+                for k in (
+                    "origin",
+                    "destinations",
+                    "date_range",
+                    "nights",
+                    "interests",
+                    "pace",
+                    "with_kids",
+                    "must_do",
+                    "avoid",
+                    "currency",
+                )
+                if out.get(k) is not None
+            },
+        }
+
     # If questions were identified, return them for a follow-up turn
     if out.get("need_info"):
         return {
@@ -125,4 +149,3 @@ def agent_plan(payload: Dict[str, Any]) -> Dict[str, Any]:
         "itinerary": iti.model_dump(),
         "hotel_options": out.get("hotel_options", []),
     }
-

@@ -53,41 +53,17 @@ class PlannerRunner:
         state.poi_candidates = poi_items
         _emit(events, "node_completed", node="retrieve_pois", items=len(poi_items))
 
-        # Plan days (prefer Gemini JSON; fallback to heuristic)
+        # Plan days (use LLM only; no heuristic fallback)
         _emit(events, "node_started", node="plan_days")
         day_plans: List[DayPlan] = []
         used_gemini = False
         try:
             day_plans = self._plan_days_with_gemini(state, nights)
             used_gemini = True
-        except Exception:
-            # Fallback: simple distribution of POIs across days
-            per_day = max(1, min(6, (len(poi_items) // max(1, nights)) or 4))
-            idx = 0
-            for d in range(nights):
-                acts: List[Activity] = []
-                for _ in range(per_day):
-                    if idx < len(poi_items):
-                        poi = poi_items[idx]
-                        idx += 1
-                        acts.append(
-                            Activity(
-                                id=str(uuid4()),
-                                name=poi.get("name") or "Attraction",
-                                category=poi.get("category") or "attraction",
-                                location=Location(lat=poi.get("lat"), lon=poi.get("lon")),
-                                notes="Auto-selected based on popularity",
-                                source="google_places",
-                            )
-                        )
-                dp = DayPlan(
-                    index=d,
-                    date=(state.date_range.start if state.date_range else None),
-                    summary=f"Highlights in {dest0.city or dest0.country or 'destination'}",
-                    activities=acts,
-                    pinned=False,
-                )
-                day_plans.append(dp)
+        except Exception as e:
+            _emit(events, "error", message=f"LLM planning failed: {e}")
+            # Surface failure and stop the run
+            raise
         state.day_plans = day_plans
         _emit(events, "node_completed", node="plan_days", days=len(day_plans), llm=used_gemini)
 
