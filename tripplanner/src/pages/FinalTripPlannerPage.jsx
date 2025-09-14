@@ -68,7 +68,7 @@ const FinalTripPlannerPage = () => {
         rooms: 1,
         adults: 2,
         children: 0,
-        currency: 'USD'
+        currency: 'INR'
       });
       setCards((prev) => [
         ...prev,
@@ -205,14 +205,14 @@ const FinalTripPlannerPage = () => {
   return (
     <div className="min-h-screen flex flex-col bg-white">
       {/* Fixed top header, 48px height */}
-      <header className="fixed top-0 left-0 right-0 h-12 border-b flex items-center px-3 bg-white z-20">
+      <header className="fixed top-0 left-0 right-0 h-14 flex items-center px-3 z-20 bg-[var(--brand-color)] text-gray-900">
         <TripPageHeader />
       </header>
       {/* Main content: left chat (fixed) + right trip panel (fixed) */}
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-[30%_70%] min-h-0 pt-12">
         {/* Center/Left: Chat panel */}
         <div className="min-h-0">
-          <div className="sticky top-12 h-[calc(100vh-3rem)] border-r bg-white">
+          <div className="sticky top-14 h-[calc(100vh-3.5rem)] border-r bg-white">
             <ChatPanel onQuickAction={(label) => {
               const lower = label.toLowerCase();
               if (lower.includes('hotel')) {
@@ -227,7 +227,7 @@ const FinalTripPlannerPage = () => {
         </div>
         {/* Right: Trip panel */}
         <aside className="min-h-0">
-          <div className="sticky top-12 h-[calc(100vh-3rem)] border-l bg-gray-50 flex flex-col">
+          <div className="sticky top-14 h-[calc(100vh-3.5rem)] border-l bg-gray-50 flex flex-col">
             {/* Split full height: itinerary scrollable (left), map full height (right) */}
             <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-4 p-4 min-h-0">
               <div className="min-h-0 overflow-y-auto space-y-4">

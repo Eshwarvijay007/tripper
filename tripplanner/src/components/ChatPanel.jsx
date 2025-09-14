@@ -1,20 +1,11 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { ChatContext } from '../context/ChatContext';
 
 const ChatPanel = ({ onQuickAction, onUserMessage }) => {
   const { messages, addMessage } = useContext(ChatContext);
   const [inputValue, setInputValue] = useState('');
 
-  // Seed assistant message similar to snapshot
-  useEffect(() => {
-    if (messages.length === 0) {
-      addMessage({
-        sender: 'assistant',
-        text: 'Hi! Tell me about your trip. Where are you headed and when? I can plan your days and suggest stays.'
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // Initial assistant message now seeded in ChatContext
 
   const handleSendMessage = () => {
     if (inputValue.trim() === '') return;
@@ -32,7 +23,7 @@ const ChatPanel = ({ onQuickAction, onUserMessage }) => {
       'bg-gradient-to-br from-teal-400 via-emerald-500 to-lime-400',
     ];
     const cls = variants[variant % variants.length];
-    return <div className={`w-8 h-8 rounded-full ${cls}`} />;
+    return <div className={`w-8 h-8 rounded-full shrink-0 ${cls}`} />;
   };
 
   return (

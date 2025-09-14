@@ -38,7 +38,7 @@ const AIItinerarySection = () => {
               The best trips aren't just checklists of landmarks, they're <strong>balanced itineraries</strong> that flow naturally, leave space for surprises, and reflect your personal travel style. That's where <strong>Tripplanner.ai</strong> steps in: helping you explore destinations, compare options, and visualize possibilities.
             </p>
             <p className="mt-4 text-lg text-gray-600 max-w-4xl mx-auto">
-              When you're ready to make it real, you're connected directly to <Link to="/layla" className="text-blue-600 underline">Layla.ai, your personal AI travel agent.</Link> Unlike static booking sites, Layla.ai works like a collaborative journey planner: you share your ideas, it suggests smarter options, and together you refine every detail until your itinerary feels effortless and truly yours.
+              When you're ready to make it real, you're connected directly to <Link to="/layla" className="text-blue-600 underline">Naomi.ai, your personal AI travel agent.</Link> Unlike static booking sites, Layla.ai works like a collaborative journey planner: you share your ideas, it suggests smarter options, and together you refine every detail until your itinerary feels effortless and truly yours.
             </p>
           </div>
 
@@ -46,13 +46,13 @@ const AIItinerarySection = () => {
             <div className="text-center feature-card">
               <h4 className="text-xl font-bold text-gray-900 mb-4">From Idea to Itinerary that saves your hours</h4>
               <p className="text-gray-600">
-                Trip planning begins in seconds with Layla.ai Travel Agent: input your dates, destinations, and what you love, and the AI designs a full itinerary from flights and hotels to transfers and experiences.
+                Trip planning begins in seconds with Naomi.ai Travel Agent: input your dates, destinations, and what you love, and the AI designs a full itinerary from flights and hotels to transfers and experiences.
               </p>
             </div>
             <div className="text-center feature-card">
               <h4 className="text-xl font-bold text-gray-900 mb-4">Plan Together</h4>
               <p className="text-gray-600">
-                Planning doesn't end with the first draft. Layla.ai allows you to <strong>chat directly with the AI</strong>, asking for adjustments like swapping museums for food tours or upgrading hotels.
+                Planning doesn't end with the first draft. Naomi.ai allows you to <strong>chat directly with the AI</strong>, asking for adjustments like swapping museums for food tours or upgrading hotels.
               </p>
             </div>
             <div className="text-center feature-card">
@@ -68,7 +68,7 @@ const AIItinerarySection = () => {
               to="/layla" 
               className="inline-flex items-center gap-2 rounded-full bg-accent-green px-8 py-4 text-lg text-white ring-2 ring-accent-green ring-offset-2 transition-colors hover:bg-accent-green-2 btn-hover"
             >
-              Start a chat with Layla.ai Travel Agent
+              Start a chat with Naomi.ai Travel Agent
             </Link>
           </div>
         </div>
