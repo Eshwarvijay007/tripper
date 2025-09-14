@@ -3,7 +3,7 @@ import LaylaHeroSection from '../components/LaylaHeroSection';
 import LaylaPromptSection from '../components/LaylaPromptSection';
 import LaylaHowItWorksSection from '../components/LaylaHowItWorksSection';
 import LaylaWhySection from '../components/LaylaWhySection';
-import LaylaCtaSection from '../components/LaylaCtaSection';
+
 import LaylaTopTripsSection from '../components/LaylaTopTripsSection';
 import LaylaFeaturesSection from '../components/LaylaFeaturesSection';
 import TripPlannerFeaturesSection from '../components/TripPlannerFeaturesSection';
@@ -18,7 +18,7 @@ const LaylaPage = () => {
       <LaylaHowItWorksSection />
       <LaylaWhySection />
       <TripPlannerFeaturesSection transparent />
-      <LaylaCtaSection />
+      
       <LaylaTopTripsSection />
       <LaylaFeaturesSection />
       <LaylaFooter />
