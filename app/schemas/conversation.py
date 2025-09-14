@@ -351,11 +351,31 @@ def merge_trip_parameters(existing: TripParameters, updates: Dict[str, Any]) -> 
         if key in merged_data:
             if value is not None and value != [] and value != "":
                 if key == "destinations" and isinstance(value, list):
-                    # For destinations, append new ones if they're not already present
+                    # Append unique destinations using a stable key, handling dicts and models
                     existing_destinations = merged_data.get("destinations", [])
+
+                    def _as_dict(loc):
+                        return loc.model_dump() if isinstance(loc, BaseModel) else loc
+
+                    def _dest_key(loc):
+                        d = _as_dict(loc)
+                        if isinstance(d, dict):
+                            return (
+                                d.get("dest_id"),
+                                d.get("iata"),
+                                d.get("city"),
+                                d.get("country"),
+                                d.get("lat"),
+                                d.get("lon"),
+                            )
+                        return d
+
+                    existing_keys = {_dest_key(d) for d in existing_destinations}
                     for dest in value:
-                        if dest not in existing_destinations:
+                        k = _dest_key(dest)
+                        if k not in existing_keys:
                             existing_destinations.append(dest)
+                            existing_keys.add(k)
                     merged_data[key] = existing_destinations
                 elif key == "user_preferences" and isinstance(value, dict):
                     # Merge user preferences
