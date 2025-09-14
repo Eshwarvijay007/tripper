@@ -58,8 +58,7 @@ def gemini_json(
         import json
         return json.loads(text)
     except Exception as e:  # pragma: no cover
-        raise RuntimeError(f"Gemini JSON generation failed: {e}")
-
+        raise RuntimeError("Gemini JSON generation failed") from e
 
 def gemini_text(
     prompt: str,
