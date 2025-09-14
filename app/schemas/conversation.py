@@ -298,21 +298,21 @@ class ConversationState(BaseModel):
     
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for serialization"""
-        return self.dict()
+        return self.model_dump()
     
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'ConversationState':
         """Create instance from dictionary for deserialization"""
-        return cls(**data)
+        return cls.model_validate(data)
     
     def to_json(self) -> str:
         """Convert to JSON string for persistence"""
-        return self.json()
+        return self.model_dump_json()
     
     @classmethod
     def from_json(cls, json_str: str) -> 'ConversationState':
         """Create instance from JSON string"""
-        return cls.parse_raw(json_str)
+        return cls.model_validate_json(json_str)
 
 
 # Utility functions for state management
