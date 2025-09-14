@@ -34,11 +34,11 @@ const LaylaPromptSection = () => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.6 }}
-      className="bg-layla-background gap-6 flex flex-col items-center w-full px-4 md:px-6 pb-30"
+      className="bg-transparent gap-6 flex flex-col items-center w-full px-4 md:px-6 pb-30"
     >
       <div className="container mx-auto flex h-full w-full flex-col items-center justify-center gap-6">
         <div className="flex h-full w-full max-w-3xl flex-col justify-center gap-6">
-          <div className="relative w-full min-w-3xs max-w-3xl rounded-2xl inline-flex flex-col justify-start items-start overflow-hidden bg-layla-background">
+          <div className="relative w-full min-w-3xs max-w-3xl rounded-2xl inline-flex flex-col justify-start items-start overflow-hidden bg-white/80 backdrop-blur-sm">
             <div className="prompt-text-area min-h-36 self-stretch rounded-2xl outline outline-1 outline-offset-[-1px] outline-input inline-flex flex-col justify-between items-start overflow-hidden">
               <div className="self-stretch flex flex-col justify-start items-start gap-2">
                 <div className="self-stretch rounded-lg inline-flex justify-start items-start gap-1">

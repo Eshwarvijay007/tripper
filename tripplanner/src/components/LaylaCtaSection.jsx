@@ -7,7 +7,7 @@ const LaylaCtaSection = () => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 1.2 }}
-      className="px-4 md:px-6 py-16 md:!py-24 bg-layla-background"
+      className="px-4 md:px-6 py-16 md:!py-24 bg-transparent"
       aria-labelledby="cta-heading"
     >
       <div className="container-padding-x bg-primary-green container mx-auto py-16 md:!rounded-xl md:!p-16">

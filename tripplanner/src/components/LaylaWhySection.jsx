@@ -33,7 +33,7 @@ const LaylaWhySection = () => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 1.0 }}
-      className="w-full py-16 md:!py-24 px-4 md:px-6 bg-layla-background overflow-hidden"
+      className="w-full py-16 md:!py-24 px-4 md:px-6 bg-transparent overflow-hidden"
     >
       <div className="container mx-auto flex flex-col items-start justify-center gap-8">
         <div className="w-full flex flex-col items-center gap-12">

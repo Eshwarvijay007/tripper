@@ -30,7 +30,7 @@ const LaylaTopTripsSection = () => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 1.4 }}
-      className="bg-layla-background py-16 md:!py-24 px-4 md:px-6"
+      className="bg-transparent py-16 md:!py-24 px-4 md:px-6"
       aria-labelledby="blog-section-heading"
     >
       <div className="container mx-auto gap-10 md:gap-12">

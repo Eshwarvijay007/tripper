@@ -42,7 +42,7 @@ const LaylaHowItWorksSection = () => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.8 }}
-      className="bg-layla-background py-16 md:!py-24 px-4 md:px-6"
+      className="bg-transparent py-16 md:!py-24 px-4 md:px-6"
       id="how-it-works-section"
     >
       <div className="container mx-auto">
