@@ -3,6 +3,9 @@ from fastapi import FastAPI
 from dotenv import load_dotenv
 from fastapi.middleware.cors import CORSMiddleware
 
+# Load .env BEFORE importing modules that may read env at import time
+load_dotenv()
+
 from .core.config import settings
 from .api.health import router as health_router
 from .api.itineraries import router as itineraries_router
@@ -13,9 +16,6 @@ from .api.runs import router as runs_router
 from .api.booking import router as booking_router
 from .api.places import router as places_router
 from .api.agent import router as agent_router
-
-
-load_dotenv()
 app = FastAPI(title=settings.app_name)
 
 app.add_middleware(

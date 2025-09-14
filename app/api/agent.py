@@ -65,7 +65,7 @@ def agent_plan(payload: Dict[str, Any]) -> Dict[str, Any]:
             _normalize_location_dict(d) for d in init_state["destinations"] if isinstance(d, dict)
         ]
 
-    # Compile and run the graph
+    # Compile and run the local LangGraph itinerary planner
     graph = build_graph().compile()
     out: Dict[str, Any] = graph.invoke(init_state)  # type: ignore
 
