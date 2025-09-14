@@ -80,33 +80,20 @@ const LaylaHowItWorksSection = () => {
               </ul>
             </div>
             <div className="relative md:w-1/2 lg:w-3/5">
-              <div className="border-border overflow-hidden rounded-xl border shadow-sm">
-                <div className="relative aspect-4/5 md:aspect-3/4 lg:aspect-4/5 max-h-[500px] w-full">
-                  <AnimatePresence mode="wait">
-                    <motion.img
-                      key={activeIndex}
-                      src={steps[activeIndex].image}
-                      alt={steps[activeIndex].title}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.3 }}
-                      className="h-full w-full object-cover"
-                    />
-                  </AnimatePresence>
+              <div className="border border-black/10 rounded-xl shadow-sm bg-white p-5 md:p-6">
+                <div className="flex items-start gap-4">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary-green text-white">
+                    {steps[activeIndex].icon}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="text-lg md:text-xl font-semibold text-gray-900 leading-tight">
+                      {steps[activeIndex].title}
+                    </h3>
+                    <p className="mt-2 text-sm md:text-base text-gray-600 leading-relaxed">
+                      {steps[activeIndex].description}
+                    </p>
+                  </div>
                 </div>
-              </div>
-              <div className="mt-5 flex justify-center gap-2">
-                {steps.map((_, index) => (
-                  <button
-                    key={index}
-                    className={`size-2 rounded-full transition-all ${
-                      activeIndex === index ? 'bg-primary-green w-6' : 'bg-muted hover:bg-muted-foreground/50'
-                    }`}
-                    aria-label={`Go to slide ${index + 1}`}
-                    onClick={() => handleStepClick(index)}
-                  ></button>
-                ))}
               </div>
             </div>
           </div>
