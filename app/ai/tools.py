@@ -85,6 +85,8 @@ def tool_search_hotels(req: HotelSearchRequest) -> Dict[str, Any]:
     dest_type = (req.destination.dest_type or "").upper() if req.destination else None
     nights = (req.dates.end - req.dates.start).days if req.dates else 1
     try:
+        if not req.dates:
+            return {"options": [], "paging": req.paging.model_dump(), "error": "Missing dates for hotel search."}
         if dest_id:
             stype = dest_type or ("CITY" if str(dest_id).startswith("-") else "HOTEL")
             raw = booking.search_hotels_by_dest(
