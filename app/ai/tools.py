@@ -8,39 +8,101 @@ from app.providers import google_places
 
 
 def tool_search_hotels(req: HotelSearchRequest) -> Dict[str, Any]:
-    """Thin wrapper around Booking RapidAPI search.
+    """Search hotels/lodging.
 
-    Returns dict: { options: [HotelOption-like dict], paging: req.paging }
+    Replaced with Google Places (v1) lodging search for richer details. Falls back to
+    Booking RapidAPI only if Places key is missing.
+    Returns dict: { options: [HotelOption-like dict], paging }
     """
     city = req.destination.city if req.destination else None
+    currency = req.currency
+
+    def _approx_price(price_level: str | None) -> float:
+        levels = {
+            "PRICE_LEVEL_FREE": 0.0,
+            "PRICE_LEVEL_INEXPENSIVE": 75.0,
+            "PRICE_LEVEL_MODERATE": 150.0,
+            "PRICE_LEVEL_EXPENSIVE": 300.0,
+            "PRICE_LEVEL_VERY_EXPENSIVE": 600.0,
+        }
+        return levels.get(str(price_level or "").upper(), 0.0)
+
+    # Prefer Google Places v1 if key available
+    try:
+        # Quick check for API key; raises if missing
+        _ = google_places._api_key()  # type: ignore
+        if not city:
+            return {"options": [], "paging": req.paging.model_dump()}
+        search = google_places.lodging_text_search_v1(city, limit=10)
+        items = search.get("items", [])
+        options: List[Dict[str, Any]] = []
+        for pl in items[:10]:
+            place_id = pl.get("id") or pl.get("place_id")
+            name = pl.get("name") or "Hotel"
+            rating = pl.get("rating")
+            price_level = pl.get("price_level")
+            photo = pl.get("photo")
+            # Fetch details for summary and potentially better photo
+            try:
+                details = google_places.place_details_v1(place_id) if place_id else {}
+            except Exception:
+                details = {}
+            editorial = ((details.get("editorialSummary") or {}).get("text")) if isinstance(details, dict) else None
+            if not photo:
+                # try to extract from details
+                photos = (details or {}).get("photos") or []
+                if photos:
+                    photo_name = photos[0].get("name")
+                    key = google_places._api_key()  # type: ignore
+                    if photo_name:
+                        photo = f"https://places.googleapis.com/v1/{photo_name}/media?maxHeightPx=800&key={key}"
+            amount = _approx_price(price_level)
+            options.append(
+                {
+                    "id": str(place_id or name),
+                    "name": name,
+                    "stars": float(rating) if rating else None,
+                    "neighborhood": pl.get("formatted_address"),
+                    "price_per_night": Money(amount=round(amount, 2), currency=Currency(currency)).model_dump(),
+                    "deeplink": None,
+                    **({"photo": photo} if photo else {}),
+                    **({"description": editorial} if editorial else {}),
+                }
+            )
+        return {"options": options, "paging": req.paging.model_dump()}
+    except Exception:
+        # Fallback to Booking RapidAPI if configured
+        pass
+
+    # Fallback: Booking.com RapidAPI
     dest_id = req.destination.dest_id if req.destination else None
     dest_type = (req.destination.dest_type or "").upper() if req.destination else None
-    nights = (req.dates.end - req.dates.start).days
+    nights = (req.dates.end - req.dates.start).days if req.dates else 1
     try:
         if dest_id:
             stype = dest_type or ("CITY" if str(dest_id).startswith("-") else "HOTEL")
             raw = booking.search_hotels_by_dest(
                 dest_id=str(dest_id),
                 search_type=stype,
-                arrival_date=req.dates.start.isoformat(),
-                departure_date=req.dates.end.isoformat(),
+                arrival_date=req.dates.start.isoformat() if req.dates else None,
+                departure_date=req.dates.end.isoformat() if req.dates else None,
                 adults=req.adults,
                 children_qty=req.children or 0,
                 room_qty=req.rooms,
                 languagecode="en-us",
-                currency_code=req.currency,
+                currency_code=currency,
                 location=city,
             )
         elif city:
             raw = booking.search_hotels_by_city(
                 city=city,
-                arrival_date=req.dates.start.isoformat(),
-                departure_date=req.dates.end.isoformat(),
+                arrival_date=req.dates.start.isoformat() if req.dates else None,
+                departure_date=req.dates.end.isoformat() if req.dates else None,
                 adults=req.adults,
                 children_qty=req.children or 0,
                 room_qty=req.rooms,
                 languagecode="en-us",
-                currency_code=req.currency,
+                currency_code=currency,
             )
         else:
             return {"options": [], "paging": req.paging.model_dump()}
@@ -53,7 +115,6 @@ def tool_search_hotels(req: HotelSearchRequest) -> Dict[str, Any]:
     for h in hotels:
         p = h.get("property", {})
         price = ((p.get("priceBreakdown", {}) or {}).get("grossPrice", {}) or {})
-        currency = price.get("currency") or req.currency
         amount = float(price.get("value") or 0.0)
         per_night = amount / nights if nights and nights > 0 else amount
         stars = p.get("accuratePropertyClass") or p.get("propertyClass") or p.get("qualityClass") or 0
@@ -111,4 +172,3 @@ def tool_search_poi(req: PoiSearchRequest) -> Dict[str, Any]:
             return {"items": [], "paging": req.paging.model_dump(), "error": str(e)}
     # No coords provided
     return {"items": [], "paging": req.paging.model_dump()}
-

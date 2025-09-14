@@ -207,3 +207,90 @@ def text_search_v1(
         )
 
     return {"items": items}
+
+
+# --- Lodging / Hotels (Places API v1) ---
+
+def lodging_text_search_v1(location_name: str, *, limit: int = 10, language: Optional[str] = None) -> Dict[str, Any]:
+    """Find lodging in a given location using Places API v1 Text Search.
+
+    Returns: { items: [ { id, name, lat, lon } ] }
+    """
+    key = _api_key()
+    url = "https://places.googleapis.com/v1/places:searchText"
+    body: Dict[str, Any] = {
+        "textQuery": f"lodging in {location_name}",
+        "pageSize": min(max(limit, 1), 20),
+    }
+    if language:
+        body["languageCode"] = language
+
+    field_mask = ",".join([
+        "places.id",
+        "places.displayName",
+        "places.location",
+        "places.rating",
+        "places.priceLevel",
+        "places.photos",
+        "places.formattedAddress",
+    ])
+    headers = {
+        "X-Goog-Api-Key": key,
+        "X-Goog-FieldMask": field_mask,
+        "Content-Type": "application/json",
+    }
+    r = requests.post(url, headers=headers, json=body, timeout=12)
+    r.raise_for_status()
+    data = r.json() or {}
+    places = data.get("places", []) or []
+    items: List[Dict[str, Any]] = []
+    for pl in places:
+        name_obj = pl.get("displayName") or {}
+        display_name = name_obj.get("text") or pl.get("name")
+        loc = (pl.get("location") or {})
+        lat = loc.get("latitude")
+        lon = loc.get("longitude")
+        photos = pl.get("photos") or []
+        photo_url: Optional[str] = None
+        if photos:
+            photo_name = photos[0].get("name")
+            if photo_name:
+                photo_url = f"https://places.googleapis.com/v1/{photo_name}/media?maxHeightPx=800&key={key}"
+        items.append({
+            "id": pl.get("id") or pl.get("name"),
+            "name": display_name,
+            "lat": lat,
+            "lon": lon,
+            "rating": pl.get("rating"),
+            "price_level": pl.get("priceLevel"),
+            "photo": photo_url,
+            "formatted_address": pl.get("formattedAddress"),
+        })
+    return {"items": items}
+
+
+def place_details_v1(place_id: str) -> Dict[str, Any]:
+    """Fetch details for a place, including editorial summary, photos, price level, rating.
+
+    Returns the raw Places API v1 JSON.
+    """
+    key = _api_key()
+    url = f"https://places.googleapis.com/v1/{place_id}"
+    field_mask = ",".join([
+        "editorialSummary",
+        "photos",
+        "priceLevel",
+        "rating",
+        "displayName",
+        "formattedAddress",
+        "location",
+    ])
+    headers = {
+        "X-Goog-Api-Key": key,
+        "X-Goog-FieldMask": field_mask,
+        "Content-Type": "application/json",
+    }
+    r = requests.get(url, headers=headers, timeout=10)
+    r.raise_for_status()
+    data = r.json() or {}
+    return data
