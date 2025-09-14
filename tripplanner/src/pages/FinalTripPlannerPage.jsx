@@ -1,4 +1,5 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useContext } from 'react';
+import { useLocation } from 'react-router-dom';
 import TripPageHeader from '../components/TripPageHeader';
 // Removed static title and itinerary in favor of dynamic cards
 import ChatPanel from '../components/ChatPanel';
@@ -8,11 +9,12 @@ import AirportsList from '../components/AirportsList';
 import DestinationsList from '../components/DestinationsList';
 import AttractionsList from '../components/AttractionsList';
 import HotelHeroCard from '../components/HotelHeroCard';
-import { searchHotels, getFlightDestinations, getBookingDestinations, getNearbyAttractions } from '../lib/api';
+import { searchHotels, getFlightDestinations, getBookingDestinations, getNearbyAttractions, getPlacesSuggestions, agentPlan } from '../lib/api';
+import { ChatContext } from '../context/ChatContext';
 
 const FinalTripPlannerPage = () => {
   const tripData = {
-    title: '5-Day Andalusian Road Trip Adventure',
+    title: '---',
     legs: [
       { city: 'Seville', days: 'Day 1-3', itineraries: [] },
       { city: 'Granada', days: 'Day 3-5', itineraries: [] },
@@ -42,6 +44,12 @@ const FinalTripPlannerPage = () => {
 
   const [cards, setCards] = useState([]);
   const [mapMarkers, setMapMarkers] = useState([]);
+  const location = useLocation();
+  const { addMessage } = useContext(ChatContext);
+
+  // Maintain agent state across turns for follow-up Q&A
+  const [agentState, setAgentState] = useState({});
+  const [pendingQuestions, setPendingQuestions] = useState([]);
 
   const defaultDates = useMemo(() => {
     const start = new Date();
@@ -103,7 +111,13 @@ const FinalTripPlannerPage = () => {
   const handleShowDestinations = async () => {
     try {
       const query = tripData.legs?.[0]?.city || 'Hubli';
-      const res = await getBookingDestinations(query);
+      // Prefer Google Places suggestions; fallback to Booking if needed
+      let res;
+      try {
+        res = await getPlacesSuggestions(query);
+      } catch {
+        res = await getBookingDestinations(query);
+      }
       const items = res.items || [];
       setCards((prev) => [
         ...prev,
@@ -121,6 +135,72 @@ const FinalTripPlannerPage = () => {
       ]);
     }
   };
+
+  // Shared function to process a free-form user text via agent
+  const processUserText = async (text) => {
+    try {
+      const res = await agentPlan({ user_text: text, state: agentState });
+      if (res.need_info) {
+        const qs = res.questions || [];
+        setAgentState(res.state || {});
+        setPendingQuestions(qs);
+        if (qs.length) {
+          const combined = qs.length === 1
+            ? qs[0]
+            : `To tailor your trip better, could you clarify: ${qs.map(q => q.endsWith('?') ? q : q + '?').join(' ')}`;
+          addMessage({ text: combined, sender: 'assistant' });
+        }
+        return;
+      }
+
+      setPendingQuestions([]);
+      const itinerary = res.itinerary;
+      const hotelOptions = res.hotel_options || [];
+      // Render itinerary as a card
+      // Pick top-rated stay for a hero card
+      let topHotel = null;
+      if (hotelOptions.length) {
+        topHotel = [...hotelOptions].sort((a, b) => (b.stars || 0) - (a.stars || 0))[0];
+      }
+
+      setCards([
+        {
+          id: `${Date.now()}`,
+          type: 'itinerary',
+          title: itinerary.trip_title || 'Planned Itinerary',
+          itinerary,
+        },
+        ...(topHotel ? [{ id: `${Date.now()}_hs`, type: 'hotel_single', title: 'Your Stay', item: topHotel }] : []),
+      ]);
+
+      // Place markers from activities if present
+      const markers = [];
+      for (const d of itinerary.days || []) {
+        for (const a of (d.activities || [])) {
+          const loc = a.location || {};
+          if (typeof loc.lat === 'number' && typeof loc.lon === 'number') {
+            markers.push({ lat: loc.lat, lon: loc.lon, title: a.name });
+          }
+        }
+      }
+      // Add map marker for selected stay (if any)
+      if (topHotel && typeof topHotel.lat === 'number' && typeof topHotel.lon === 'number') {
+        markers.push({ lat: topHotel.lat, lon: topHotel.lon, title: topHotel.name });
+      }
+      if (markers.length) setMapMarkers(markers);
+    } catch (e) {
+      setCards([{ id: `${Date.now()}`, type: 'error', title: 'Agent', error: e.message || 'Failed to plan trip' }]);
+    }
+  };
+
+  // If navigated with initialQuery from Layla page, auto-process it once
+  useEffect(() => {
+    const q = location?.state?.initialQuery;
+    if (q && typeof q === 'string' && q.trim()) {
+      processUserText(q);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
@@ -142,68 +222,7 @@ const FinalTripPlannerPage = () => {
               } else if (lower.includes('destination') || lower.includes('place')) {
                 handleShowDestinations();
               }
-            }} onUserMessage={async (text) => {
-              try {
-                // 1) Resolve destination from free-form text
-                const destRes = await getBookingDestinations(text);
-                const items = destRes.items || [];
-                if (!items.length) {
-                  setCards([{ id: `${Date.now()}`, type: 'error', title: 'Hotels', error: 'No matching destination found.' }]);
-                  return;
-                }
-                // Prefer city-type, otherwise first with coords
-                let chosen = items.find(i => (i.dest_type || '').toLowerCase() === 'city')
-                  || items.find(i => typeof i.lat === 'number' && typeof i.lon === 'number')
-                  || items[0];
-                const city = chosen.city_name || chosen.name;
-                // 2) Search hotels for resolved city
-                const hotelRes = await searchHotels({
-                  destination: { city },
-                  dates: defaultDates,
-                  rooms: 1,
-                  adults: 2,
-                  children: 0,
-                  currency: 'USD'
-                });
-                const hotelItems = hotelRes.options || [];
-                // 3) Update cards (clear previous) and map markers
-                if (hotelItems.length > 0) {
-                  setCards([
-                    {
-                      id: `${Date.now()}`,
-                      type: 'hotels',
-                      title: `Hotels in ${city}`,
-                      items: hotelItems,
-                    }
-                  ]);
-                } else {
-                  // Fallback: show at least one nice hotel card from destination matches if present
-                  const hotelDest = items.find(i => (i.dest_type || '').toLowerCase() === 'hotel');
-                  const single = hotelDest || {
-                    name: `Top stay in ${city}`,
-                    city_name: chosen.city_name || city,
-                    region: chosen.region,
-                    country: chosen.country,
-                    image_url: chosen.image_url,
-                    lat: chosen.lat,
-                    lon: chosen.lon,
-                  };
-                  setCards([
-                    {
-                      id: `${Date.now()}`,
-                      type: 'hotel_single',
-                      title: `Recommended stay in ${city}`,
-                      item: single,
-                    }
-                  ]);
-                }
-                if (typeof chosen.lat === 'number' && typeof chosen.lon === 'number') {
-                  setMapMarkers([{ lat: chosen.lat, lon: chosen.lon, title: city }]);
-                }
-              } catch (e) {
-                setCards([{ id: `${Date.now()}`, type: 'error', title: 'Hotels', error: e.message || 'Failed to load hotels' }]);
-              }
-            }} />
+            }} onUserMessage={async (text) => { await processUserText(text); }} />
           </div>
         </div>
         {/* Right: Trip panel */}
@@ -221,6 +240,20 @@ const FinalTripPlannerPage = () => {
                         <button className="text-xs text-blue-600" onClick={handleShowHotels}>Refresh</button>
                       )}
                     </div>
+                    {card.type === 'itinerary' && (
+                      <div className="space-y-3">
+                        {(card.itinerary?.days || []).map((d) => (
+                          <div key={d.index} className="border rounded p-2">
+                            <div className="font-medium text-sm">Day {d.index + 1}: {d.summary || 'Plan'}</div>
+                            <ul className="mt-1 list-disc list-inside text-sm text-gray-700">
+                              {(d.activities || []).map((a) => (
+                                <li key={a.id}>{a.name}{a.category ? ` · ${a.category}` : ''}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                     {card.type === 'hotels' && <HotelsList items={card.items} />}
                     {card.type === 'hotel_single' && <HotelHeroCard hotel={card.item} />}
                     {card.type === 'airports' && <AirportsList items={card.items} />}

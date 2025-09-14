@@ -99,6 +99,16 @@ export async function getBookingDestinations(query) {
   return res.json();
 }
 
+export async function getPlacesSuggestions(query, { signal } = {}) {
+  const url = `${API_BASE}/api/places/suggest?query=${encodeURIComponent(query)}`;
+  const res = await fetch(url, { signal, headers: { Accept: 'application/json' } });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Places suggest failed ${res.status}: ${text}`);
+  }
+  return res.json();
+}
+
 export async function getNearbyAttractions({ lat, lon }) {
   const res = await fetch(`${API_BASE}/api/search/poi`, {
     method: 'POST',
@@ -106,5 +116,19 @@ export async function getNearbyAttractions({ lat, lon }) {
     body: JSON.stringify({ location: { lat, lon }, paging: { page: 1, page_size: 20 } }),
   });
   if (!res.ok) throw new Error(`POI search failed ${res.status}`);
+  return res.json();
+}
+
+export async function agentPlan(payload, { signal } = {}) {
+  const res = await fetch(`${API_BASE}/api/agent/plan`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+    body: JSON.stringify(payload),
+    signal,
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Agent plan failed ${res.status}: ${text}`);
+  }
   return res.json();
 }
