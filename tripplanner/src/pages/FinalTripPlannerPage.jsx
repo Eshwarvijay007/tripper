@@ -231,6 +231,24 @@ const FinalTripPlannerPage = () => {
             {/* Split full height: itinerary scrollable (left), map full height (right) */}
             <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-4 p-4 min-h-0">
               <div className="min-h-0 overflow-y-auto space-y-4">
+                {/* Permanent intro card */}
+                <div className="bg-white/90 border rounded-3xl p-6 md:p-7 shadow-md backdrop-blur-sm overflow-hidden min-h-28 md:min-h-36">
+                  <div className="flex items-start gap-4">
+                    <div className="h-10 w-1.5 rounded-full bg-gradient-to-b from-emerald-500 to-lime-400" />
+                    <div className="flex-1">
+                      <h3 className="text-lg md:text-xl font-semibold tracking-tight text-gray-900">Your Itinerary Plan</h3>
+                      <p className="mt-2 text-sm md:text-base text-gray-600 leading-relaxed">
+                        Here i am just for you.
+                      </p>
+                      <p className="mt-1 text-sm text-gray-600 leading-relaxed">
+                        A neat day-by-day schedule, hotels, and sights — all in one place.
+                      </p>
+                      <p className="mt-1 text-sm text-gray-600 leading-relaxed">
+                        Want changes? Ask on the left and we’ll refine instantly.
+                      </p>
+                    </div>
+                  </div>
+                </div>
                 {/* Dynamic cards area */}
                 {cards.map((card) => (
                   <div key={card.id} className="bg-white border rounded-md p-4">
