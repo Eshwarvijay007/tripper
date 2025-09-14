@@ -3,7 +3,7 @@ import uuid
 from typing import Iterator
 from fastapi import APIRouter, Query, HTTPException
 from fastapi.responses import StreamingResponse
-from langchain_core.messages import HumanMessage
+from langchain_core.messages import HumanMessage, AIMessage
 from ..schemas.chat import ChatMessageRequest, ChatMessageResponse
 from ..services.store import CONVERSATIONS, MESSAGES
 from ..ai.chat_graph import graph
@@ -27,6 +27,21 @@ def post_message(req: ChatMessageRequest):
     )
 
 
+def _to_lc_messages(conv: dict) -> list:
+    lc_msgs = []
+    for mid in conv.get("messages", []):
+        m = MESSAGES.get(mid)
+        if not m:
+            continue
+        role = m.get("role")
+        content = m.get("content") or ""
+        if role == "user":
+            lc_msgs.append(HumanMessage(content=content))
+        elif role == "assistant":
+            lc_msgs.append(AIMessage(content=content))
+    return lc_msgs
+
+
 def _stream_assistant(conv_id: str) -> Iterator[bytes]:
     # Fetch the most recent user message content
     conv = CONVERSATIONS.get(conv_id)
@@ -43,13 +58,27 @@ def _stream_assistant(conv_id: str) -> Iterator[bytes]:
     yield (str({"event": "start", "conversation_id": conv_id}) + "\n").encode("utf-8")
     try:
         config = {"configurable": {"thread_id": conv_id}}
-        out = graph.invoke({"messages": [HumanMessage(content=user_msg["content"])]}, config=config)
+        # Provide full conversation so the graph can avoid repeated asks
+        lc_history = _to_lc_messages(conv)
+        out = graph.invoke({"messages": lc_history}, config=config)
         # Emit one message event with assistant content
         msgs = out.get("messages") or []
+        # The last message should be the assistant's reply
         text = ""
-        for m in msgs:
-            if getattr(m, "type", None) == "ai":
-                text = getattr(m, "content", "") or ""
+        if msgs and isinstance(msgs[-1], AIMessage):
+            text = msgs[-1].content or ""
+        else:
+            # Fallback: search for last AI
+            for m in reversed(msgs):
+                if isinstance(m, AIMessage):
+                    text = m.content or ""
+                    break
+        # Persist assistant reply into conversation history
+        if text:
+            import uuid as _uuid
+            mid = str(_uuid.uuid4())
+            MESSAGES[mid] = {"id": mid, "conv_id": conv_id, "role": "assistant", "content": text}
+            CONVERSATIONS[conv_id]["messages"].append(mid)
         yield (str({"event": "message", "role": "assistant", "content": text}) + "\n").encode("utf-8")
         yield (str({"event": "done"}) + "\n").encode("utf-8")
     except Exception as e:

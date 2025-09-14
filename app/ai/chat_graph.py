@@ -6,6 +6,7 @@ from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph.message import add_messages
 from langchain_core.messages import AnyMessage, HumanMessage, SystemMessage, AIMessage
 from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 import os
 from app.ai.gemini import gemini_json
 from app.ai.tools import tool_search_poi, tool_search_hotels
@@ -37,8 +38,9 @@ model = ChatGoogleGenerativeAI(model="gemini-2.5-pro", temperature=0.5, google_a
 
 def assistant_node(state: MessagesState) -> MessagesState:
     msgs = state["messages"]
-    # Ensure a system prompt is present at the start of a thread
-    if not msgs or not isinstance(msgs[0], SystemMessage):
+    # Ensure exactly one system prompt: if any SystemMessage exists, do not add ours
+    has_system = any(isinstance(m, SystemMessage) for m in msgs)
+    if not has_system:
         msgs = [SystemMessage(content=SYSTEM_PROMPT), *msgs]
     ai = model.invoke(msgs)
     return {"messages": [ai]}
@@ -66,6 +68,23 @@ def router_node(state: MessagesState) -> MessagesState:
         data = gemini_json(f"{text}\n\n{spec}")
         action = data.get("action") or "assistant"
         params = {k: v for k, v in data.items() if k != "action"}
+        # Route to clarification nodes when essential params are missing
+        if action == "search_poi":
+            loc = (params.get("location") or {}) if isinstance(params.get("location"), dict) else {}
+            if not (loc.get("city") or (loc.get("lat") is not None and loc.get("lon") is not None)):
+                return {"action": "clarify_poi", "params": {}}
+        if action == "search_hotels":
+            loc = (params.get("location") or {}) if isinstance(params.get("location"), dict) else {}
+            dr = (params.get("date_range") or {}) if isinstance(params.get("date_range"), dict) else {}
+            has_loc = bool(loc.get("city") or (loc.get("lat") is not None and loc.get("lon") is not None))
+            has_dates = bool(dr.get("start") and dr.get("end"))
+            if not (has_loc and has_dates):
+                need = []
+                if not has_loc:
+                    need.append("location")
+                if not has_dates:
+                    need.append("date_range")
+                return {"action": "clarify_hotels", "params": {"missing": need}}
         return {"action": action, "params": params}
     except Exception:
         return {"action": "assistant", "params": {}}
@@ -97,6 +116,46 @@ def search_poi_node(state: MessagesState) -> MessagesState:
         f"Here are some popular attractions near {loc.city or loc.country}:\n" + "\n".join(lines)
     )
     return {"messages": [AIMessage(content=text)]}
+
+
+def clarify_poi_node(state: MessagesState) -> MessagesState:
+    msgs = state.get("messages", [])
+    prompt = ChatPromptTemplate.from_messages([
+        (
+            "system",
+            """
+            You are a friendly trip planner. Ask ONLY for the missing information to perform an attractions search.
+            - Ask concisely for the city name or a precise location.
+            - Do not repeat questions already answered in the conversation.
+            - Vary phrasing naturally; one question per line; no extra prose.
+            """,
+        ),
+        MessagesPlaceholder(variable_name="messages"),
+    ])
+    rendered = prompt.format_messages(messages=msgs)
+    ai = model.invoke(rendered)
+    return {"messages": [ai]}
+
+
+def clarify_hotels_node(state: MessagesState) -> MessagesState:
+    msgs = state.get("messages", [])
+    need = state.get("params", {}).get("missing") or []
+    prompt = ChatPromptTemplate.from_messages([
+        (
+            "system",
+            """
+            You are a friendly trip planner. Ask ONLY for the missing hotel search details.
+            - Possible missing fields: location (city or coords), date_range (check-in and check-out).
+            - Ask 1-2 short, direct questions covering just the missing fields.
+            - Do not re-ask items already provided in the conversation.
+            - Vary phrasing; one question per line; no extra prose.
+            """,
+        ),
+        MessagesPlaceholder(variable_name="messages"),
+    ])
+    rendered = prompt.format_messages(messages=msgs,)
+    ai = model.invoke(rendered)
+    return {"messages": [ai]}
 
 
 def search_hotels_node(state: MessagesState) -> MessagesState:
@@ -151,6 +210,8 @@ _builder.add_node("route", router_node)
 _builder.add_node("assistant", assistant_node)
 _builder.add_node("search_poi", search_poi_node)
 _builder.add_node("search_hotels", search_hotels_node)
+_builder.add_node("clarify_poi", clarify_poi_node)
+_builder.add_node("clarify_hotels", clarify_hotels_node)
 _builder.set_entry_point("route")
 
 def _route_after_route(state: MessagesState) -> str:
@@ -163,10 +224,14 @@ _builder.add_conditional_edges("route", _route_after_route, {
     "assistant": "assistant",
     "search_poi": "search_poi",
     "search_hotels": "search_hotels",
+    "clarify_poi": "clarify_poi",
+    "clarify_hotels": "clarify_hotels",
 })
 _builder.add_edge("assistant", END)
 _builder.add_edge("search_poi", END)
 _builder.add_edge("search_hotels", END)
+_builder.add_edge("clarify_poi", END)
+_builder.add_edge("clarify_hotels", END)
 
 # Per-thread in-memory checkpointing
 _memory = MemorySaver()

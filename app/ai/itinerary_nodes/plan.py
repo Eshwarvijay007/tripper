@@ -32,6 +32,9 @@ def node_plan_days(state: PlanState) -> PlanState:
         pace = state.get("pace") or "relaxed"
         interests = ", ".join(state.get("interests") or []) or "general highlights"
         must_do = ", ".join(state.get("must_do") or [])
+        avoid = ", ".join(state.get("avoid") or [])
+        with_kids = bool(state.get("with_kids") or False)
+        budget = state.get("budget")
         schema_hint = (
             "Return ONLY JSON with: {\n"
             "  \"day_plans\": [\n"
@@ -47,6 +50,9 @@ def node_plan_days(state: PlanState) -> PlanState:
             f"Plan a {nights}-day trip in {dest_label} for a {pace} pace.\n"
             f"Interests: {interests}.\n"
             + (f"Must-do: {must_do}.\n" if must_do else "")
+            + (f"Avoid: {avoid}.\n" if avoid else "")
+            + ("Include kid-friendly attractions and manageable pacing.\n" if with_kids else "")
+            + (f"Budget context (optional): {budget}.\n" if budget else "")
             + "Select 4-6 realistic attractions per day from this list (avoid repeats):\n"
             + "\n".join(poi_lines)
             + "\nFocus on geographic clustering and reasonable daily flow.\n"
@@ -88,4 +94,3 @@ def node_plan_days(state: PlanState) -> PlanState:
         state["error"] = f"LLM planning failed: {str(e)}"
         state["next"] = "finalize"
         return state
-

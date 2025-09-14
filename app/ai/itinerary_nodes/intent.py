@@ -12,7 +12,8 @@ def node_parse_intent(state: PlanState) -> PlanState:
         return state
     prompt = (
         "Extract a trip request into JSON with keys: origin(city?), destinations([city?]), "
-        "date_range({start,end} ISO-8601) or nights(number), interests([string]), pace(relaxed|packed), currency. "
+        "date_range({start,end} ISO-8601) or nights(number), interests([string]), pace(relaxed|packed), currency, "
+        "with_kids(boolean?), must_do([string]?), avoid([string]?), budget({amount?,currency?}?). "
         "Return ONLY JSON. If a field is not explicitly present, omit it or set it to null. "
         "Do NOT guess or fabricate missing values. If nights is not provided, omit it (do not default)."
     )
@@ -39,6 +40,17 @@ def node_parse_intent(state: PlanState) -> PlanState:
             state["pace"] = pace
         if (cur := data.get("currency")):
             state["currency"] = cur
+        if (wk := data.get("with_kids")) is not None:
+            try:
+                state["with_kids"] = bool(wk)
+            except Exception:
+                pass
+        if (md := data.get("must_do")):
+            state["must_do"] = md
+        if (av := data.get("avoid")):
+            state["avoid"] = av
+        if (bd := data.get("budget")):
+            state["budget"] = bd
     except Exception:
         pass
     # Fallback: destination disambiguation via Places when user mentions a name
@@ -78,4 +90,3 @@ def node_parse_intent(state: PlanState) -> PlanState:
             pass
     state["next"] = "check_missing"
     return state
-

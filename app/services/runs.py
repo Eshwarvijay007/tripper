@@ -2,8 +2,7 @@ from __future__ import annotations
 import threading
 from typing import Any, Dict, List
 
-from app.ai.langraph_itinerary import build_graph
-from langgraph.checkpoint.memory import MemorySaver
+from app.ai.prompt_planner import PromptFirstPlanner
 from app.schemas.itinerary import TripCreateRequest, Itinerary, DayPlan, Activity
 from app.schemas.common import Location
 from app.services.store import RUNS, RUN_EVENTS, ITINERARIES
@@ -32,18 +31,9 @@ def _worker(run_id: str, req: TripCreateRequest) -> None:
             "currency": (req.constraints.currency if req.constraints and req.constraints.currency else "USD"),
         }
 
-        memory = MemorySaver()
-        graph = build_graph().compile(checkpointer=memory)
         acc_state: Dict[str, Any] = {k: v for k, v in init_state.items() if v is not None}
-        config = {"configurable": {"thread_id": run_id}}
-        for update in graph.stream(init_state, config=config, stream_mode="updates"):
-            for node_name, delta in update.items():
-                if isinstance(delta, dict):
-                    acc_state.update({k: v for k, v in delta.items() if v is not None})
-                    changed = list(delta.keys())
-                else:
-                    changed = []
-                _push(run_id, "node_completed", node=node_name, changed=changed)
+        planner = PromptFirstPlanner(max_steps=8)
+        acc_state = planner.run(acc_state)
 
         if acc_state.get("error"):
             msg = str(acc_state.get("error"))

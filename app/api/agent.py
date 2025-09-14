@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter
 
-from app.ai.langraph_itinerary import build_graph
+from app.ai.prompt_planner import PromptFirstPlanner
 from app.schemas.itinerary import Itinerary, TravelerInfo, ItineraryConstraints, DayPlan, Activity
 from app.schemas.common import Location
 
@@ -65,9 +65,8 @@ def agent_plan(payload: Dict[str, Any]) -> Dict[str, Any]:
             _normalize_location_dict(d) for d in init_state["destinations"] if isinstance(d, dict)
         ]
 
-    # Compile and run the local LangGraph itinerary planner
-    graph = build_graph().compile()
-    out: Dict[str, Any] = graph.invoke(init_state)  # type: ignore
+    # Use prompt-first orchestration for itinerary planning
+    out: Dict[str, Any] = PromptFirstPlanner(max_steps=6).run(init_state)
 
     # If the planner surfaced an error (e.g., LLM failure), present it as a follow-up message
     if out.get("error"):
@@ -112,6 +111,7 @@ def agent_plan(payload: Dict[str, Any]) -> Dict[str, Any]:
                     "must_do",
                     "avoid",
                     "currency",
+                    "asked_keys",
                 )
                 if out.get(k) is not None
             },
