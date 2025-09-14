@@ -6,27 +6,27 @@ import { Luggage, Plane, Hotel, Globe } from 'lucide-react';
 const steps = [
   {
     title: 'Inspiration',
-    description: 'Show me cultural spots to explore in Italy',
+    description: 'Show me cultural spots to explore in Tamil Nadu',
+    longDescription: "Explore the diverse cultural and historical landscapes of Tamil Nadu. Instead of a rigid itinerary, focus on a journey of discovery, highlighting the region's rich heritage. Describe the cultural significance of key locations, from the ancient Pallava monuments of Mahabalipuram and the living Chola temples of Thanjavur and Gangaikonda Cholapuram, to the vibrant spiritual center of Madurai.\n\nInclude lesser-known cultural gems like the Danish-era town of Tharangambadi or the unique Chettinad mansions. Mention specific cultural experiences beyond sightseeing, such as observing temple rituals, learning about traditional crafts like Kanchipuram silk weaving, or savoring the distinct local cuisine. The goal is to capture the essence of a cultural immersion rather than a simple tourist checklist.",
     icon: <Luggage />,
-    image: 'https://layla.ai/Homepage/images/how-it-works/en/inspire.png',
   },
   {
     title: 'Flights',
-    description: 'Find me cheap flights under $300 to Rome',
+    description: 'Find me cheap flights under 5000 to Pune',
+    longDescription: 'Search for the best flight deals to your desired destination. Filter by price, airline, and layovers to find the perfect option for your trip.',
     icon: <Plane />,
-    image: 'https://layla.ai/_next/static/media/progressive_image_placeholder.28d15427.webp',
   },
   {
     title: 'Hotels',
-    description: 'Show me family friendly hotels in Rome',
+    description: 'Show me family friendly hotels in Coorg',
+    longDescription: 'Discover and book hotels that fit your needs. Explore options from luxury resorts to budget-friendly stays, with amenities and locations tailored to your preferences.',
     icon: <Hotel />,
-    image: 'https://layla.ai/_next/static/media/progressive_image_placeholder.28d15427.webp',
   },
   {
     title: 'Trips',
-    description: 'Build me a 7-day family vacation to Rome, including a guided tour of the Colosseum',
+    description: 'Build me a 7-day family vacation to Dubai, including a guided tour of the Burj Khalifa',
+    longDescription: 'Plan your entire trip with a detailed itinerary. Get suggestions for activities, tours, and dining, all customized to your travel style and interests.In addition to tours and activities, the plan should offer a variety of dining options, from luxury fine dining to casual, family-friendly restaurants with designated kids play areas. Provide practical travel advice on local transportation (e.g., Metro vs. taxis), visa information, and tips for navigating the city with children. The goal is to create a full, customizable travel guide that balances adventure, relaxation, and cultural experiences, tailored to different family travel styles and budgets.',
     icon: <Globe />,
-    image: 'https://layla.ai/_next/static/media/progressive_image_placeholder.28d15427.webp',
   },
 ];
 
@@ -91,6 +91,9 @@ const LaylaHowItWorksSection = () => {
                     </h3>
                     <p className="mt-2 text-sm md:text-base text-gray-600 leading-relaxed">
                       {steps[activeIndex].description}
+                    </p>
+                    <p className="mt-2 text-sm md:text-base text-gray-600 leading-relaxed">
+                      {steps[activeIndex].longDescription}
                     </p>
                   </div>
                 </div>
