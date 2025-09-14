@@ -10,7 +10,8 @@ const ChatPanel = ({ onQuickAction, onUserMessage }) => {
     if (messages.length === 0) {
       addMessage({
         sender: 'assistant',
-        text: 'Hi! Tell me about your trip. Where are you headed and when? I can plan your days and suggest stays.'
+        text:
+          "Now that we have your trip, how about we modify and reserve it. I can help you tailor your trip, update your preferences and add or remove things. Remember, the whole trip will be booked for you hassle free! You don't have to do anything.",
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -50,6 +51,20 @@ const ChatPanel = ({ onQuickAction, onUserMessage }) => {
             {msg.sender === 'user' && <div className="w-8 h-8 rounded-full bg-gray-300"></div>}
           </div>
         ))}
+        <div className="absolute bottom-2 left-0 right-0 bg-white border-t">
+          {['Modify trip', 'Make it cheaper', 'Show hotels'].map((label) => (
+            <button
+              key={label}
+              className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-sm hover:bg-gray-50 bg-white"
+              onClick={() => {
+                addMessage({ text: label, sender: 'user' });
+                if (onQuickAction) onQuickAction(label);
+              }}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
       </div>
       {/* Fixed bottom bar with credit counter and input */}
       <div className="absolute bottom-0 left-0 right-0 bg-white border-t">

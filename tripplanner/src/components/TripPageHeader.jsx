@@ -8,7 +8,7 @@ const TripPageHeader = () => {
           <img alt="Layla avatar" width="32" height="32" className="rounded-full" src="https://layla.ai/theme/layla/new-character-small.webp" />
           <span className="font-medium hidden sm:inline">Layla</span>
         </a>
-        <div className="text-sm text-gray-800 truncate max-w-[50vw]">---</div>
+        <div className="text-sm text-gray-800 truncate max-w-[50vw]">5-Day Andalusian Road Trip Adventure</div>
       </div>
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-2 border rounded-md bg-gray-50">
