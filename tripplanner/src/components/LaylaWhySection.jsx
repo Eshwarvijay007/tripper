@@ -7,7 +7,7 @@ import { motion } from 'framer-motion';
 
 const whyLayla = [
   {
-    image: allepyImg,
+    image: goaImg,
     text: 'Turning the big 3-0 with my Cuties! Hook us up with a four-day Malabar Coast trip—we want lots of beach time, chill homestays, and a sunset cruise.',
   },
   {
@@ -15,7 +15,7 @@ const whyLayla = [
     text: 'Just married! My wife and I are ready for our first big adventure. Give us a four-day Kerala backwater trip with a luxurious houseboat and plenty of special moments to kick off our life together.',
   },
   {
-    image: munnarImg,
+    image: kedarnathImg,
     text: 'My family and I have always dreamed of a spiritual journey. Plan an eight-day pilgrimage with temple visits, serene ashrams, and peaceful budget stays.',
   },
 ];
