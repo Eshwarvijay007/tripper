@@ -12,7 +12,7 @@ class FlightSearchRequest(BaseModel):
     children: int = 0
     cabin: CabinClass = CabinClass.ECONOMY
     max_price: Optional[float] = None
-    currency: str = "USD"
+    currency: str = "INR"
 
 
 class FlightOption(BaseModel):
@@ -33,7 +33,7 @@ class HotelSearchRequest(BaseModel):
     children: int = 0
     budget_per_night: Optional[Money] = None
     filters: List[str] = Field(default_factory=list)
-    currency: str = "USD"
+    currency: str = "INR"
     paging: Paging = Paging()
 
 

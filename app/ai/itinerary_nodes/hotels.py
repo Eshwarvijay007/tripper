@@ -25,7 +25,7 @@ def node_search_hotels(state: PlanState) -> PlanState:
         rooms=1,
         adults=2,
         children=0,
-        currency=state.get("currency") or "USD",
+        currency=state.get("currency") or "INR",
     )
     res = tool_search_hotels(h_req)
     state["hotel_options"] = (res.get("options") or [])[:5]

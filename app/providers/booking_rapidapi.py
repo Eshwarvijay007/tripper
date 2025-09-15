@@ -73,7 +73,7 @@ def search_hotels_by_city(
     room_qty: int = 1,
     page_number: int = 1,
     languagecode: str = "en-us",
-    currency_code: str = "USD",
+    currency_code: str = "INR",
     units: str = "metric",
     temperature_unit: str = "c",
 ) -> Dict[str, Any]:
@@ -112,7 +112,7 @@ def search_hotels_by_dest(
     room_qty: int = 1,
     page_number: int = 1,
     languagecode: str = "en-us",
-    currency_code: str = "USD",
+    currency_code: str = "INR",
     location: str | None = None,
     units: str = "metric",
     temperature_unit: str = "c",

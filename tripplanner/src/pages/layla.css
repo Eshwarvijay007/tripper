@@ -1,1 +1,35 @@
-/* Add any custom styles for Layla page here */
+/* Layla page background */
+.layla-page {
+  background-color: #f5f2ec;
+}
+
+/* Handwritten bubbly title styling using local font */
+@font-face {
+  font-family: 'MilkywayDemo';
+  src: url('../assets/fonts/Milkyway DEMO.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+.handwritten-title {
+  font-family: system-ui, -apple-system, "Inter", sans-serif;
+  color: #1f2937; /* base dark for sentence */
+}
+
+.handwritten-title .script-accent {
+  font-family: 'MilkywayDemo', cursive;
+  color: #d61f3c; /* richer red */
+  font-weight: 500;
+  text-decoration: underline;
+  text-decoration-color: #fecdd3; /* soft pink underline */
+  text-decoration-thickness: 0.12em; /* thinner underline */
+  text-underline-offset: 0.06em; /* closer to text */
+  text-decoration-skip-ink: auto;
+  display: inline-block;
+  transform: rotate(-0.5deg);
+  letter-spacing: 0px;
+}
+
+/* Subtle depth without heavy outline */
+.handwritten-title { text-shadow: 0 1px 0 rgba(0,0,0,0.02); }

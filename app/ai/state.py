@@ -20,7 +20,7 @@ class GraphState(BaseModel):
     must_do: List[str] = Field(default_factory=list)
     avoid: List[str] = Field(default_factory=list)
     budget: Optional[Money] = None
-    currency: Optional[str] = "USD"
+    currency: Optional[str] = "INR"
 
     # Working data
     poi_candidates: List[Dict[str, Any]] = Field(default_factory=list)

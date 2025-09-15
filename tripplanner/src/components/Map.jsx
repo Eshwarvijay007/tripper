@@ -6,7 +6,7 @@ const Map = ({ fullHeight = false, markers = [] }) => {
   const [mapsLoaded, setMapsLoaded] = useState(false);
   const [mapsError, setMapsError] = useState(null);
   const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-  const style = `border rounded-md bg-white ${fullHeight ? 'h-full' : 'h-64'}`;
+  const style = `border rounded-2xl overflow-hidden bg-white ${fullHeight ? 'h-full' : 'h-64'}`;
 
   useEffect(() => {
     let canceled = false;

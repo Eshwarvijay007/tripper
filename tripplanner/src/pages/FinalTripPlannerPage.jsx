@@ -68,7 +68,7 @@ const FinalTripPlannerPage = () => {
         rooms: 1,
         adults: 2,
         children: 0,
-        currency: 'USD'
+        currency: 'INR'
       });
       setCards((prev) => [
         ...prev,
@@ -205,14 +205,14 @@ const FinalTripPlannerPage = () => {
   return (
     <div className="min-h-screen flex flex-col bg-white">
       {/* Fixed top header, 48px height */}
-      <header className="fixed top-0 left-0 right-0 h-12 border-b flex items-center px-3 bg-white z-20">
+      <header className="fixed top-0 left-0 right-0 h-14 flex items-center px-3 z-20 bg-[var(--brand-color)] text-gray-900">
         <TripPageHeader />
       </header>
       {/* Main content: left chat (fixed) + right trip panel (fixed) */}
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-[30%_70%] min-h-0 pt-12">
         {/* Center/Left: Chat panel */}
         <div className="min-h-0">
-          <div className="sticky top-12 h-[calc(100vh-3rem)] border-r bg-white">
+          <div className="sticky top-14 h-[calc(100vh-3.5rem)] border-r bg-[var(--brand-color)]">
             <ChatPanel onQuickAction={(label) => {
               const lower = label.toLowerCase();
               if (lower.includes('hotel')) {
@@ -227,10 +227,28 @@ const FinalTripPlannerPage = () => {
         </div>
         {/* Right: Trip panel */}
         <aside className="min-h-0">
-          <div className="sticky top-12 h-[calc(100vh-3rem)] border-l bg-gray-50 flex flex-col">
+          <div className="sticky top-14 h-[calc(100vh-3.5rem)] border-l bg-gray-50 flex flex-col">
             {/* Split full height: itinerary scrollable (left), map full height (right) */}
             <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-4 p-4 min-h-0">
               <div className="min-h-0 overflow-y-auto space-y-4">
+                {/* Permanent intro card */}
+                <div className="bg-white/90 border rounded-3xl p-6 md:p-7 shadow-md backdrop-blur-sm overflow-hidden min-h-28 md:min-h-36">
+                  <div className="flex items-start gap-4">
+                    <div className="h-10 w-1.5 rounded-full bg-gradient-to-b from-emerald-500 to-lime-400" />
+                    <div className="flex-1">
+                      <h3 className="text-lg md:text-xl font-semibold tracking-tight text-gray-900">Your Itinerary Plan</h3>
+                      <p className="mt-2 text-sm md:text-base text-gray-600 leading-relaxed">
+                        Here i am just for you.
+                      </p>
+                      <p className="mt-1 text-sm text-gray-600 leading-relaxed">
+                        A neat day-by-day schedule, hotels, and sights — all in one place.
+                      </p>
+                      <p className="mt-1 text-sm text-gray-600 leading-relaxed">
+                        Want changes? Ask on the left and we’ll refine instantly.
+                      </p>
+                    </div>
+                  </div>
+                </div>
                 {/* Dynamic cards area */}
                 {cards.map((card) => (
                   <div key={card.id} className="bg-white border rounded-md p-4">
@@ -302,7 +320,7 @@ const FinalTripPlannerPage = () => {
                   </div>
                 ))}
               </div>
-              <div className="min-h-0 relative">
+              <div className="min-h-0 h-full relative -mt-2 -mr-1 -mb-3 md:-mt-3 md:-mr-1 md:-mb-4">
                 <Map fullHeight markers={mapMarkers} />
               </div>
             </div>

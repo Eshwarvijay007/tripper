@@ -29,7 +29,7 @@ def _worker(run_id: str, req: TripCreateRequest) -> None:
             "with_kids": False,
             "must_do": (req.constraints.must_do if req.constraints else []),
             "avoid": (req.constraints.avoid if req.constraints else []),
-            "currency": (req.constraints.currency if req.constraints and req.constraints.currency else "USD"),
+            "currency": (req.constraints.currency if req.constraints and req.constraints.currency else "INR"),
         }
 
         memory = MemorySaver()

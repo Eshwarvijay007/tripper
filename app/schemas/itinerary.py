@@ -20,7 +20,7 @@ class ItineraryConstraints(BaseModel):
     pace: Optional[str] = None  # e.g., "relaxed", "packed"
     must_do: List[str] = []
     avoid: List[str] = []
-    currency: Optional[str] = "USD"
+    currency: Optional[str] = "INR"
     locale: Optional[str] = "en"
 
 

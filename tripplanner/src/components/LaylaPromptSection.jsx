@@ -1,13 +1,13 @@
 import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Globe2, Briefcase, Users, FileText, Send } from 'lucide-react';
 import { postChatMessage, streamChat } from '../lib/api';
 import { ChatContext } from '../context/ChatContext';
 
 const LaylaPromptSection = () => {
   const [inputValue, setInputValue] = useState('');
-  const { messages, addMessage, updateLastMessage } = useContext(ChatContext);
+  const { addMessage } = useContext(ChatContext);
   const [isTyping, setIsTyping] = useState(false);
   const [conversationId, setConversationId] = useState(null);
   const navigate = useNavigate();
@@ -34,11 +34,11 @@ const LaylaPromptSection = () => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.6 }}
-      className="bg-layla-background gap-6 flex flex-col items-center w-full px-4 md:px-6 pb-30"
+      className="bg-transparent gap-6 flex flex-col items-center w-full px-4 md:px-6 pb-30"
     >
       <div className="container mx-auto flex h-full w-full flex-col items-center justify-center gap-6">
         <div className="flex h-full w-full max-w-3xl flex-col justify-center gap-6">
-          <div className="relative w-full min-w-3xs max-w-3xl rounded-2xl inline-flex flex-col justify-start items-start overflow-hidden bg-layla-background">
+          <div className="relative w-full min-w-3xs max-w-3xl rounded-2xl inline-flex flex-col justify-start items-start overflow-hidden bg-white/80 backdrop-blur-sm">
             <div className="prompt-text-area min-h-36 self-stretch rounded-2xl outline outline-1 outline-offset-[-1px] outline-input inline-flex flex-col justify-between items-start overflow-hidden">
               <div className="self-stretch flex flex-col justify-start items-start gap-2">
                 <div className="self-stretch rounded-lg inline-flex justify-start items-start gap-1">
@@ -87,45 +87,7 @@ const LaylaPromptSection = () => {
               </button>
             ))}
           </div>
-          <AnimatePresence>
-            <div className="w-full max-w-3xl">
-              {messages.map((msg, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className={`flex items-start gap-3 my-4 ${
-                    msg.sender === 'user' ? 'justify-end' : 'justify-start'
-                  }`}>
-                  {msg.sender === 'assistant' && <img src="https://layla.ai/theme/layla/new-character-small.webp" alt="Layla" className="w-8 h-8 rounded-full" />}
-                  <div
-                    className={`rounded-lg px-4 py-2 max-w-lg ${
-                      msg.sender === 'user' ? 'bg-primary-green text-white' : 'bg-gray-200 text-layla-foreground'
-                    }`}>
-                    {msg.text}
-                  </div>
-                  {msg.sender === 'user' && <div className="w-8 h-8 rounded-full bg-gray-400"></div>}
-                </motion.div>
-              ))}
-              {isTyping && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="flex items-start gap-3 my-4 justify-start"
-                >
-                  <img src="https://layla.ai/theme/layla/new-character-small.webp" alt="Layla" className="w-8 h-8 rounded-full" />
-                  <div className="bg-gray-200 rounded-lg px-4 py-2 max-w-lg flex items-center">
-                    <div className="typing-indicator">
-                      <div className="typing-dot"></div>
-                      <div className="typing-dot"></div>
-                      <div className="typing-dot"></div>
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-            </div>
-          </AnimatePresence>
+          {/* Conversation renders only on /trip; Layla page is input-only */}
         </div>
       </div>
     </motion.section>

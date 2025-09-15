@@ -22,6 +22,8 @@
     --colors-primary: #21BCBE;
     --primary-400: #21BCBE;
     --primary-500: #1da5a7;
+    /* Brand color used for /trip header background */
+    --brand-color: #f5f2ec; /* RGB(232,229,223) */
 }
 
 @layer base {

@@ -1,20 +1,11 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { ChatContext } from '../context/ChatContext';
 
 const ChatPanel = ({ onQuickAction, onUserMessage }) => {
   const { messages, addMessage } = useContext(ChatContext);
   const [inputValue, setInputValue] = useState('');
 
-  // Seed assistant message similar to snapshot
-  useEffect(() => {
-    if (messages.length === 0) {
-      addMessage({
-        sender: 'assistant',
-        text: 'Hi! Tell me about your trip. Where are you headed and when? I can plan your days and suggest stays.'
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // Initial assistant message now seeded in ChatContext
 
   const handleSendMessage = () => {
     if (inputValue.trim() === '') return;
@@ -24,8 +15,19 @@ const ChatPanel = ({ onQuickAction, onUserMessage }) => {
     if (onUserMessage) onUserMessage(text);
   };
 
+  // Simple gradient avatar with three variants
+  const GradientAvatar = ({ variant = 0 }) => {
+    const variants = [
+      'bg-gradient-to-br from-pink-500 via-orange-400 to-amber-300',
+      'bg-gradient-to-br from-indigo-500 via-purple-500 to-fuchsia-500',
+      'bg-gradient-to-br from-teal-400 via-emerald-500 to-lime-400',
+    ];
+    const cls = variants[variant % variants.length];
+    return <div className={`w-8 h-8 rounded-full shrink-0 ${cls}`} />;
+  };
+
   return (
-    <section className="relative h-full bg-white">
+    <section className="relative h-full bg-transparent">
       {/* Scrollable region (messages + quick replies) with reserved bottom space for input */}
       <div className="absolute inset-x-0 top-0 bottom-20 overflow-y-auto px-4 pt-4 pb-2">
         {messages.map((msg, index) => (
@@ -33,13 +35,7 @@ const ChatPanel = ({ onQuickAction, onUserMessage }) => {
             key={index}
             className={`flex items-start gap-3 my-4 ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
           >
-            {msg.sender === 'assistant' && (
-              <img
-                src="https://layla.ai/theme/layla/new-character-small.webp"
-                alt="Layla"
-                className="w-8 h-8 rounded-full"
-              />
-            )}
+            {msg.sender === 'assistant' && <GradientAvatar variant={index} />}
             <div
               className={`rounded-lg px-4 py-2 max-w-lg ${
                 msg.sender === 'user' ? 'bg-primary-green text-white' : 'bg-gray-100 text-gray-900'
@@ -47,7 +43,7 @@ const ChatPanel = ({ onQuickAction, onUserMessage }) => {
             >
               {msg.text}
             </div>
-            {msg.sender === 'user' && <div className="w-8 h-8 rounded-full bg-gray-300"></div>}
+            {msg.sender === 'user' && <GradientAvatar variant={index + 1} />}
           </div>
         ))}
       </div>
