@@ -1,8 +1,8 @@
 
 import React, { useState } from 'react';
-import allepyImg from '../assets/images/Goa.jpeg';
+import goaImg from '../assets/images/Goa.jpeg';
 import keralaImg from '../assets/images/kerala.jpeg';
-import munnarImg from '../assets/images/kedarnath.jpeg';
+import kedarnathImg from '../assets/images/kedarnath.jpeg';
 import { motion } from 'framer-motion';
 
 const whyLayla = [
