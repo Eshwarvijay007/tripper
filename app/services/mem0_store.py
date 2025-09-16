@@ -7,9 +7,8 @@ from typing import Iterable, List, Optional
 
 try:
     from mem0 import MemoryClient
-except Exception:  # pragma: no cover - mem0 optional in some environments
+except ImportError:  # pragma: no cover - mem0 optional in some environments
     MemoryClient = None  # type: ignore
-
 
 logger = logging.getLogger(__name__)
 
