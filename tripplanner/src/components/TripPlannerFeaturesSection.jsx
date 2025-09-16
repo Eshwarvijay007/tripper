@@ -30,7 +30,8 @@ const TripPlannerFeaturesSection = ({ transparent = false }) => {
             <div className="w-full p-6 sm:w-1/2 md:mt-8">
               <h3 className="mb-3 text-2xl md:text-3xl font-semibold text-gray-900">Instant itineraries</h3>
               <p className="text-gray-700">
-                Just enter your travel dates and destination—our planner instantly creates a detailed itinerary tailored to your needs. From iconic landmarks to hidden gems, your schedule includes timing, routes, and estimated costs so you always know what’s next. It's like having a personal guide, without the guesswork.
+                Enter your travel dates and destinations, and get a full plan while saving you hours, complete with trains, hotels, and activities.
+                <br /><strong className="italic text-gray-900">Example: </strong><span>Planning a week in Jaipur? Naomi suggests a 7-day itinerary that balances classics like Amer Fort and City Palace with hidden gems like Chand Baori and local bazaars. You’ll see timing, routes, and budget estimates all in one view.</span> 
               </p>
             </div>
             <div className="w-full p-6 sm:w-1/2 self-center">
@@ -46,7 +47,7 @@ const TripPlannerFeaturesSection = ({ transparent = false }) => {
             <div className="mt-8 w-full p-6 sm:w-1/2">
               <h3 className="mb-3 text-2xl md:text-3xl font-semibold text-gray-900">Trips for everyone</h3>
               <p className="text-gray-700">
-                Whether you're traveling solo, with a partner, or in a group, your experience is uniquely yours. Our planner adapts to different travel styles—relaxed or fast-paced, luxurious or budget-friendly—ensuring your itinerary reflects your vibe, your preferences, and your pace.
+                Every traveler is different, and your trip should reflect that. We adapt to your style, whether you’re planning a family vacation with downtime built in, a couples’ getaway filled with romantic moments or a Golden Triangle road trip our AI designs journeys that match your pace and preferences.
               </p>
             </div>
           </div>
@@ -56,7 +57,8 @@ const TripPlannerFeaturesSection = ({ transparent = false }) => {
             <div className="w-full p-6 sm:w-1/2 md:mt-8">
               <h3 className="mb-3 text-2xl md:text-3xl font-semibold text-gray-900">Live prices & easy booking</h3>
               <p className="text-gray-700">
-                No more switching between tabs or apps. See real-time prices for flights, hotels, and activities—all in one place. You get transparent comparisons and smooth booking options, so you're never left wondering if you missed a better deal. Everything is updated as you plan.
+                Compare real-time prices for trains and hotels, then book directly with trusted platforms like IRCTC,<a href='easemytrip.com' className="text-blue-600"> EaseMyTrip.</a> Whether you’re searching for a boutique hotel in Jaipur or the cheapest flight to Goa, our AI finds the best options so you save money, time, and stress.
+                <br /><strong className="italic text-gray-900">Example: </strong><span> Help me find the best flights from Delhi to Goa on October 19, 2025, and a hotel near Baga Beach.” and watch the magic happen on Naomi.ai</span>
               </p>
             </div>
             <div className="w-full p-6 sm:w-1/2 self-center">
@@ -72,7 +74,8 @@ const TripPlannerFeaturesSection = ({ transparent = false }) => {
             <div className="mt-8 w-full p-6 sm:w-1/2">
               <h3 className="mb-3 text-2xl md:text-3xl font-semibold text-gray-900">Flexible editing</h3>
               <p className="text-gray-700">
-                Plans change—and that’s okay. Easily remove, swap, or add new activities to your schedule. The AI recalculates travel time, updates pricing, and reshuffles nearby options so your day flows naturally. Every tweak feels seamless.
+                Swap activities, adjust transport, or upgrade your hotel with one click, your itinerary updates instantly.
+                <br /><strong className="italic text-gray-900">Example: </strong><span> If you decide to skip a temple visit for a backwater cruise in Kochi, your plan automatically recalculates travel times, new costs, and nearby suggestions so nothing feels broken.</span>
               </p>
             </div>
           </div>
@@ -82,7 +85,7 @@ const TripPlannerFeaturesSection = ({ transparent = false }) => {
             <div className="w-full p-6 sm:w-1/2 md:mt-8">
               <h3 className="mb-3 text-2xl md:text-3xl font-semibold text-gray-900">Smart food & culture picks</h3>
               <p className="text-gray-700">
-                Beyond tourist traps, discover authentic places to eat, drink, and unwind. Our AI learns what you love—be it rooftop cocktails, cozy cafes, or night markets—and finds cultural hotspots that match. Each suggestion adds flavor to your journey, both literally and figuratively.
+                Beyond tourist traps, discover authentic places to eat, drink, and unwind. Our AI learns what you love be it rooftop cocktails, cozy cafes, or night markets and finds cultural hotspots that match. Each suggestion adds flavor to your journey, both literally and figuratively.
               </p>
             </div>
             <div className="w-full p-6 sm:w-1/2 self-center">
