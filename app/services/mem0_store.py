@@ -102,16 +102,16 @@ def fetch_context(conversation_id: str, query: Optional[str] = None, *, limit: i
         return []
 
     try:
+        k = max(1, min(int(limit or 5), 10))
         if query:
-            results = client.search(query=query, user_id=conversation_id, top_k=limit)
+            results = client.search(query=query, user_id=conversation_id, top_k=k)
         else:
-            results = client.get_all(version="v2", user_id=conversation_id, page_size=limit)
+            results = client.get_all(version="v2", user_id=conversation_id, page_size=k)
     except Exception as exc:  # pragma: no cover - remote API failures
         logger.warning("Failed to fetch Mem0 context for %s: %s", conversation_id, exc)
         return []
 
     return _normalise_memory_items(results or [])
-
 
 def record_user_message(conversation_id: str, content: str) -> None:
     """Persist a single user turn in Mem0."""
