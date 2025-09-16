@@ -1,12 +1,13 @@
 from __future__ import annotations
 import uuid
 from typing import Iterator
-from fastapi import APIRouter, Query, HTTPException
+from fastapi import APIRouter, Query
 from fastapi.responses import StreamingResponse
-from langchain_core.messages import HumanMessage
+from langchain_core.messages import HumanMessage, SystemMessage
 from ..schemas.chat import ChatMessageRequest, ChatMessageResponse
 from ..services.store import CONVERSATIONS, MESSAGES
-from ..ai.chat_graph import graph
+from ..ai.chat_graph import SYSTEM_PROMPT, graph
+from ..services.mem0_store import fetch_context, record_turn, record_user_message
 
 
 router = APIRouter(prefix="/api/chat", tags=["chat"])
@@ -41,18 +42,37 @@ def _stream_assistant(conv_id: str) -> Iterator[bytes]:
 
     # Stream: start → single assistant reply → done
     yield (str({"event": "start", "conversation_id": conv_id}) + "\n").encode("utf-8")
+    user_text = str(user_msg.get("content") or "")
     try:
         config = {"configurable": {"thread_id": conv_id}}
-        out = graph.invoke({"messages": [HumanMessage(content=user_msg["content"])]}, config=config)
+
+        context_snippets = fetch_context(conv_id, query=user_text)
+        lc_messages = [SystemMessage(content=SYSTEM_PROMPT)]
+        if context_snippets:
+            formatted = "\n".join(f"- {snippet}" for snippet in context_snippets)
+            lc_messages.append(SystemMessage(content=f"Relevant previous context:\n{formatted}"))
+        lc_messages.append(HumanMessage(content=user_text))
+
+        out = graph.invoke({"messages": lc_messages}, config=config)
         # Emit one message event with assistant content
         msgs = out.get("messages") or []
         text = ""
         for m in msgs:
             if getattr(m, "type", None) == "ai":
                 text = getattr(m, "content", "") or ""
+        assistant_msg_id = str(uuid.uuid4())
+        MESSAGES[assistant_msg_id] = {
+            "id": assistant_msg_id,
+            "conv_id": conv_id,
+            "role": "assistant",
+            "content": text,
+        }
+        CONVERSATIONS[conv_id]["messages"].append(assistant_msg_id)
+        record_turn(conv_id, user_text, text)
         yield (str({"event": "message", "role": "assistant", "content": text}) + "\n").encode("utf-8")
         yield (str({"event": "done"}) + "\n").encode("utf-8")
     except Exception as e:
+        record_user_message(conv_id, user_text)
         yield (str({"event": "error", "message": str(e)}) + "\n").encode("utf-8")
 
 

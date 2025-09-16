@@ -1,5 +1,4 @@
 import React, { useState, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Globe2, Briefcase, Users, FileText, Send } from 'lucide-react';
 import { postChatMessage, streamChat } from '../lib/api';
@@ -7,19 +6,43 @@ import { ChatContext } from '../context/ChatContext';
 
 const LaylaPromptSection = () => {
   const [inputValue, setInputValue] = useState('');
-  const { addMessage } = useContext(ChatContext);
+  const { addMessage, updateLastMessage, conversationId, setConversationId } = useContext(ChatContext);
   const [isTyping, setIsTyping] = useState(false);
-  const [conversationId, setConversationId] = useState(null);
-  const navigate = useNavigate();
   const [chatDisabled, setChatDisabled] = useState(false);
 
   const handleSendMessage = async (message) => {
     const text = message || inputValue;
-    if (text.trim() === '') return;
+    if (text.trim() === '' || chatDisabled) return;
     addMessage({ text, sender: 'user' });
     setInputValue('');
     setChatDisabled(true);
-    navigate('/trip', { state: { initialQuery: text } });
+    setIsTyping(true);
+    try {
+      const { conversationId: newConversationId, streamUrl } = await postChatMessage({
+        content: text,
+        conversationId,
+      });
+      setConversationId(newConversationId);
+      addMessage({ sender: 'assistant', text: '' });
+      await streamChat({
+        streamUrl,
+        onEvent: (evt) => {
+          if (!evt || typeof evt !== 'object') return;
+          if (evt.event === 'message') {
+            updateLastMessage(evt.content || '');
+          } else if (evt.event === 'error') {
+            const msg = evt.message || 'Something went wrong while generating a reply.';
+            updateLastMessage(msg);
+          }
+        },
+      });
+    } catch (error) {
+      const fallback = error instanceof Error ? error.message : 'Unexpected error sending message.';
+      addMessage({ sender: 'assistant', text: fallback });
+    } finally {
+      setIsTyping(false);
+      setChatDisabled(false);
+    }
   };
 
   const quickActions = [

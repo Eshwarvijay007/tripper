@@ -10,3 +10,4 @@ haversine==2.8.1
 langgraph==0.2.45
 langchain-core>=0.3.72,<0.4.0
 langchain-google-genai==2.0.5
+mem0==0.1.117
