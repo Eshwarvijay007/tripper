@@ -71,6 +71,7 @@ class PlanState(TypedDict, total=False):
     must_do: Annotated[List[str], _replace_list]
     avoid: Annotated[List[str], _replace_list]
     currency: Annotated[Optional[str], _replace_if_new]
+    budget: Annotated[Optional[str], _replace_if_new]
 
     # Working
     poi_candidates: Annotated[List[dict], _replace_list]
@@ -84,6 +85,10 @@ class PlanState(TypedDict, total=False):
     questions: Annotated[List[str], _replace_list]
     error: Annotated[Optional[str], _replace_if_new]
     next: Annotated[Optional[str], _replace_if_new]
+    intent: Annotated[Optional[str], _replace_if_new]
+    short_term_memory: Annotated[Optional[str], _replace_if_new]
+    response: Annotated[Optional[str], _replace_if_new]
+    user_id: Annotated[Optional[str], _replace_if_new]
 
 
 from app.schemas.common import Location

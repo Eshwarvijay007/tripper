@@ -6,6 +6,7 @@ from fastapi import APIRouter
 from app.ai.langraph_itinerary import build_graph
 from app.schemas.itinerary import Itinerary, TravelerInfo, ItineraryConstraints, DayPlan, Activity
 from app.schemas.common import Location
+from app.ai.memory import build_context, populate_state_from_memory
 
 
 router = APIRouter(prefix="/api/agent", tags=["agent"])
@@ -26,6 +27,7 @@ def agent_plan(payload: Dict[str, Any]) -> Dict[str, Any]:
     Request shape (flexible):
     {
       "user_text": str | null,
+      "user_id": str | null,  # Optional user identifier for memory
       "state": { optional partial PlanState keys }
     }
 
@@ -34,12 +36,25 @@ def agent_plan(payload: Dict[str, Any]) -> Dict[str, Any]:
       - Else itinerary: { need_info: false, itinerary: {...} }
     """
     user_text: Optional[str] = payload.get("user_text")
+    user_id: Optional[str] = payload.get("user_id", "anonymous")  # Default to anonymous
     state_in: Dict[str, Any] = payload.get("state") or {}
 
     # Build initial state for graph (dict-based)
     init_state: Dict[str, Any] = {}
     if user_text:
         init_state["user_text"] = str(user_text)
+        init_state["user_id"] = user_id
+        
+        # Build memory context if user_text is provided
+        try:
+            memory_context = build_context(user_id, user_text)
+            # Use the formatted context which includes recent conversation and preferences
+            formatted_context = memory_context.get("formatted_context", "")
+            init_state["short_term_memory"] = formatted_context
+        except Exception as e:
+            # Don't fail if memory system has issues
+            print(f"Memory context failed: {e}")
+            init_state["short_term_memory"] = ""
 
     # Allow passing partial state across turns
     for k in (
@@ -53,9 +68,28 @@ def agent_plan(payload: Dict[str, Any]) -> Dict[str, Any]:
         "must_do",
         "avoid",
         "currency",
+        "budget",
     ):
         if k in state_in and state_in.get(k) is not None:
             init_state[k] = state_in.get(k)
+    
+    # Populate state with user preferences from memory (only if not already present)
+    try:
+        original_state = dict(init_state)
+        init_state = populate_state_from_memory(user_id, init_state)
+        
+        # Debug: Log what was populated from memory
+        populated_fields = []
+        for key, value in init_state.items():
+            if key not in original_state and value:
+                populated_fields.append(f"{key}: {value}")
+        
+        if populated_fields:
+            print(f"Populated from memory for user {user_id}: {', '.join(populated_fields)}")
+            
+    except Exception as e:
+        print(f"Failed to populate state from memory: {e}")
+        # Continue without memory population
 
     # Normalize location structures if present
     if isinstance(init_state.get("origin"), dict):
@@ -88,6 +122,7 @@ def agent_plan(payload: Dict[str, Any]) -> Dict[str, Any]:
                     "must_do",
                     "avoid",
                     "currency",
+                    "budget",
                 )
                 if out.get(k) is not None
             },
@@ -112,6 +147,7 @@ def agent_plan(payload: Dict[str, Any]) -> Dict[str, Any]:
                     "must_do",
                     "avoid",
                     "currency",
+                    "budget",
                 )
                 if out.get(k) is not None
             },

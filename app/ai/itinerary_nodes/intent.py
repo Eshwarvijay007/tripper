@@ -8,13 +8,15 @@ from .state import PlanState
 def node_parse_intent(state: PlanState) -> PlanState:
     text = state.get("user_text") or ""
     if not text.strip():
-        state["next"] = "check_missing"
+        state["next"] = "validate_trip"
         return state
     prompt = (
         "Extract a trip request into JSON with keys: origin(city?), destinations([city?]), "
-        "date_range({start,end} ISO-8601) or nights(number), interests([string]), pace(relaxed|packed), currency. "
+        "date_range({start,end} ISO-8601) or nights(number), interests([string]), pace(relaxed|packed), "
+        "currency, budget(budget|mid-range|luxury or specific amount). "
         "Return ONLY JSON. If a field is not explicitly present, omit it or set it to null. "
-        "Do NOT guess or fabricate missing values. If nights is not provided, omit it (do not default)."
+        "Do NOT guess or fabricate missing values. If nights is not provided, omit it (do not default). "
+        "For budget, only extract if explicitly mentioned (e.g., 'budget trip', '$1000', 'luxury travel')."
     )
     try:
         data = gemini_json(f"{text}\n\n{prompt}")
@@ -39,6 +41,8 @@ def node_parse_intent(state: PlanState) -> PlanState:
             state["pace"] = pace
         if (cur := data.get("currency")):
             state["currency"] = cur
+        if (budget := data.get("budget")):
+            state["budget"] = budget
     except Exception:
         pass
     # Fallback: destination disambiguation via Places when user mentions a name
@@ -76,6 +80,6 @@ def node_parse_intent(state: PlanState) -> PlanState:
                 }]
         except Exception:
             pass
-    state["next"] = "check_missing"
+    state["next"] = "validate_trip"
     return state
 
