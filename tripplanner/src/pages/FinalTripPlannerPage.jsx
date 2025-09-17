@@ -11,6 +11,7 @@ import AttractionsList from '../components/AttractionsList';
 import HotelHeroCard from '../components/HotelHeroCard';
 import { searchHotels, getFlightDestinations, getBookingDestinations, getNearbyAttractions, getPlacesSuggestions, agentPlan } from '../lib/api';
 import { ChatContext } from '../context/ChatContext';
+import { ensureConversationId } from '../lib/conversation';
 
 const FinalTripPlannerPage = () => {
   const tripData = {
@@ -45,7 +46,7 @@ const FinalTripPlannerPage = () => {
   const [cards, setCards] = useState([]);
   const [mapMarkers, setMapMarkers] = useState([]);
   const location = useLocation();
-  const { addMessage } = useContext(ChatContext);
+  const { addMessage, conversationId, setConversationId } = useContext(ChatContext);
 
   // Maintain agent state across turns for follow-up Q&A
   const [agentState, setAgentState] = useState({});
@@ -139,7 +140,11 @@ const FinalTripPlannerPage = () => {
   // Shared function to process a free-form user text via agent
   const processUserText = async (text) => {
     try {
-      const res = await agentPlan({ user_text: text, state: agentState });
+      const convId = conversationId || ensureConversationId();
+      if (convId && convId !== conversationId) {
+        setConversationId(convId);
+      }
+      const res = await agentPlan({ user_text: text, state: agentState, conversation_id: convId });
       if (res.need_info) {
         const qs = res.questions || [];
         setAgentState(res.state || {});
@@ -195,6 +200,11 @@ const FinalTripPlannerPage = () => {
 
   // If navigated with initialQuery from Layla page, auto-process it once
   useEffect(() => {
+    const navConversationId = location?.state?.conversationId;
+    const resolvedConversationId = navConversationId || ensureConversationId();
+    if (resolvedConversationId && resolvedConversationId !== conversationId) {
+      setConversationId(resolvedConversationId);
+    }
     const q = location?.state?.initialQuery;
     if (q && typeof q === 'string' && q.trim()) {
       processUserText(q);

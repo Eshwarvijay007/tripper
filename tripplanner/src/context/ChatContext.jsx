@@ -1,4 +1,9 @@
 import React, { createContext, useState } from 'react';
+import {
+  clearConversationIdCookie,
+  getConversationIdFromCookie,
+  setConversationIdCookie,
+} from '../lib/conversation';
 
 export const ChatContext = createContext();
 
@@ -9,6 +14,7 @@ export const ChatProvider = ({ children }) => {
       text: 'Hi! Tell me about your trip. Where are you headed and when? I can plan your days and suggest stays.'
     }
   ]);
+  const [conversationId, setConversationIdState] = useState(() => getConversationIdFromCookie());
 
   const addMessage = (message) => {
     setMessages((prevMessages) => {
@@ -28,8 +34,17 @@ export const ChatProvider = ({ children }) => {
     });
   };
 
+  const setConversationId = (id) => {
+    setConversationIdState(id);
+    if (id) {
+      setConversationIdCookie(id);
+    } else {
+      clearConversationIdCookie();
+    }
+  };
+
   return (
-    <ChatContext.Provider value={{ messages, addMessage, updateLastMessage }}>
+    <ChatContext.Provider value={{ messages, addMessage, updateLastMessage, conversationId, setConversationId }}>
       {children}
     </ChatContext.Provider>
   );

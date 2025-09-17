@@ -2,14 +2,13 @@ import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Globe2, Briefcase, Users, FileText, Send } from 'lucide-react';
-import { postChatMessage, streamChat } from '../lib/api';
 import { ChatContext } from '../context/ChatContext';
+import { ensureConversationId } from '../lib/conversation';
 
 const LaylaPromptSection = () => {
   const [inputValue, setInputValue] = useState('');
-  const { addMessage } = useContext(ChatContext);
+  const { addMessage, conversationId, setConversationId } = useContext(ChatContext);
   const [isTyping, setIsTyping] = useState(false);
-  const [conversationId, setConversationId] = useState(null);
   const navigate = useNavigate();
   const [chatDisabled, setChatDisabled] = useState(false);
 
@@ -19,7 +18,14 @@ const LaylaPromptSection = () => {
     addMessage({ text, sender: 'user' });
     setInputValue('');
     setChatDisabled(true);
-    navigate('/trip', { state: { initialQuery: text } });
+    let currentConversationId = conversationId;
+    if (!currentConversationId) {
+      currentConversationId = ensureConversationId();
+      setConversationId(currentConversationId);
+    } else {
+      setConversationId(currentConversationId);
+    }
+    navigate('/trip', { state: { initialQuery: text, conversationId: currentConversationId } });
   };
 
   const quickActions = [
