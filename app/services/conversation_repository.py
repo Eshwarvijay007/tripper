@@ -25,6 +25,8 @@ def ensure_conversation(conv_id: str) -> None:
             {
                 "$setOnInsert": {
                     "created_at": now,
+                    "updated_at": now,
+                    "message_count": 0,
                 }
             },
             upsert=True,
@@ -60,6 +62,18 @@ def append_message(
                 "extra": extra or {},
                 "created_at": timestamp,
             }
+        )
+        conv_col.update_one(
+            {"_id": conv_id},
+            {
+                "$set": {
+                    "updated_at": timestamp,
+                    "last_role": role,
+                },
+                "$inc": {"message_count": 1},
+                "$setOnInsert": {"created_at": timestamp},
+            },
+            upsert=True,
         )
         return
 
