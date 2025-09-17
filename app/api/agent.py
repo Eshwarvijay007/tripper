@@ -1,4 +1,5 @@
 from __future__ import annotations
+import uuid
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter
@@ -6,6 +7,7 @@ from fastapi import APIRouter
 from app.ai.langraph_itinerary import build_graph
 from app.schemas.itinerary import Itinerary, TravelerInfo, ItineraryConstraints, DayPlan, Activity
 from app.schemas.common import Location
+from app.services.conversation_repository import ensure_conversation, append_message
 
 
 router = APIRouter(prefix="/api/agent", tags=["agent"])
@@ -33,8 +35,20 @@ def agent_plan(payload: Dict[str, Any]) -> Dict[str, Any]:
       - If more info needed: { need_info: true, questions: [str], state: {...} }
       - Else itinerary: { need_info: false, itinerary: {...} }
     """
+    conv_id: str = payload.get("conversation_id") or str(uuid.uuid4())
+    ensure_conversation(conv_id)
+
     user_text: Optional[str] = payload.get("user_text")
     state_in: Dict[str, Any] = payload.get("state") or {}
+
+    if user_text:
+        append_message(
+            conv_id,
+            str(uuid.uuid4()),
+            "user",
+            user_text,
+            extra={"source": "agent_plan"},
+        )
 
     # Build initial state for graph (dict-based)
     init_state: Dict[str, Any] = {}
@@ -72,7 +86,8 @@ def agent_plan(payload: Dict[str, Any]) -> Dict[str, Any]:
     # If the planner surfaced an error (e.g., LLM failure), present it as a follow-up message
     if out.get("error"):
         msg = str(out.get("error"))
-        return {
+        response = {
+            "conversation_id": conv_id,
             "need_info": True,
             "questions": [msg],
             "state": {
@@ -92,10 +107,19 @@ def agent_plan(payload: Dict[str, Any]) -> Dict[str, Any]:
                 if out.get(k) is not None
             },
         }
+        append_message(
+            conv_id,
+            str(uuid.uuid4()),
+            "assistant",
+            response["questions"],
+            extra={"type": "agent_plan_error"},
+        )
+        return response
 
     # If questions were identified, return them for a follow-up turn
     if out.get("need_info"):
-        return {
+        response = {
+            "conversation_id": conv_id,
             "need_info": True,
             "questions": out.get("questions", []),
             "state": {
@@ -116,6 +140,14 @@ def agent_plan(payload: Dict[str, Any]) -> Dict[str, Any]:
                 if out.get(k) is not None
             },
         }
+        append_message(
+            conv_id,
+            str(uuid.uuid4()),
+            "assistant",
+            response["questions"],
+            extra={"type": "agent_plan_questions"},
+        )
+        return response
 
     # Otherwise, convert the planned state into an Itinerary-like payload
     dests = [Location(**d) for d in (out.get("destinations") or [])]
@@ -144,8 +176,20 @@ def agent_plan(payload: Dict[str, Any]) -> Dict[str, Any]:
         status="ready",
     )
 
-    return {
+    response = {
+        "conversation_id": conv_id,
         "need_info": False,
         "itinerary": iti.model_dump(),
         "hotel_options": out.get("hotel_options", []),
     }
+    append_message(
+        conv_id,
+        str(uuid.uuid4()),
+        "assistant",
+        {
+            "itinerary": response["itinerary"],
+            "hotel_options": response["hotel_options"],
+        },
+        extra={"type": "agent_plan_itinerary"},
+    )
+    return response

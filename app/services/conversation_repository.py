@@ -19,16 +19,33 @@ def _mongo_collections() -> tuple[Optional[Collection], Optional[Collection]]:
 def ensure_conversation(conv_id: str) -> None:
     conv_col, _ = _mongo_collections()
     if conv_col is not None:
+        now = datetime.now(timezone.utc)
         conv_col.update_one(
             {"_id": conv_id},
-            {"$setOnInsert": {"messages": [], "created_at": datetime.now(timezone.utc)}},
+            {
+                "$setOnInsert": {
+                    "messages": [],
+                    "created_at": now,
+                    "updated_at": now,
+                }
+            },
             upsert=True,
+        )
+        conv_col.update_one(
+            {"_id": conv_id, "messages": {"$exists": False}},
+            {"$set": {"messages": [], "updated_at": now}},
         )
         return
     memory_store.CONVERSATIONS.setdefault(conv_id, {"id": conv_id, "messages": []})
 
 
-def append_message(conv_id: str, msg_id: str, role: str, content: str) -> None:
+def append_message(
+    conv_id: str,
+    msg_id: str,
+    role: str,
+    content: Any,
+    extra: Optional[Dict[str, Any]] = None,
+) -> None:
     conv_col, msg_col = _mongo_collections()
     timestamp = datetime.now(timezone.utc)
     if msg_col is not None and conv_col is not None:
@@ -38,17 +55,17 @@ def append_message(conv_id: str, msg_id: str, role: str, content: str) -> None:
                 "conversation_id": conv_id,
                 "role": role,
                 "content": content,
+                "extra": extra or {},
                 "created_at": timestamp,
             }
         )
         conv_col.update_one(
             {"_id": conv_id},
             {
-                "$setOnInsert": {"messages": [], "created_at": timestamp},
                 "$push": {"messages": msg_id},
                 "$set": {"updated_at": timestamp},
             },
-            upsert=True,
+            upsert=False,
         )
         return
 
@@ -58,6 +75,7 @@ def append_message(conv_id: str, msg_id: str, role: str, content: str) -> None:
         "conv_id": conv_id,
         "role": role,
         "content": content,
+        "extra": extra or {},
         "created_at": timestamp,
     }
     convo.setdefault("messages", []).append(msg_id)
@@ -71,7 +89,9 @@ def get_messages(conv_id: str) -> List[Dict[str, Any]]:
             {
                 "id": str(doc.get("_id")),
                 "role": doc.get("role", "user"),
-                "content": doc.get("content", ""),
+                "content": doc.get("content"),
+                "extra": doc.get("extra", {}),
+                "created_at": (doc.get("created_at") or datetime.now(timezone.utc)).isoformat(),
             }
             for doc in docs
         ]
@@ -88,7 +108,9 @@ def get_messages(conv_id: str) -> List[Dict[str, Any]]:
             {
                 "id": msg.get("id", mid),
                 "role": msg.get("role", "user"),
-                "content": msg.get("content", ""),
+                "content": msg.get("content"),
+                "extra": msg.get("extra", {}),
+                "created_at": (msg.get("created_at") or datetime.now(timezone.utc)).isoformat(),
             }
         )
     return results
@@ -107,6 +129,7 @@ def get_last_user_message(conv_id: str) -> Optional[Dict[str, Any]]:
                 "conversation_id": conv_id,
                 "role": doc.get("role", "user"),
                 "content": doc.get("content", ""),
+                "extra": doc.get("extra", {}),
             }
         return None
 
