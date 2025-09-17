@@ -24,19 +24,21 @@ def ensure_conversation(conv_id: str) -> None:
             {"_id": conv_id},
             {
                 "$setOnInsert": {
-                    "messages": [],
                     "created_at": now,
-                    "updated_at": now,
                 }
             },
             upsert=True,
         )
-        conv_col.update_one(
-            {"_id": conv_id, "messages": {"$exists": False}},
-            {"$set": {"messages": [], "updated_at": now}},
-        )
         return
-    memory_store.CONVERSATIONS.setdefault(conv_id, {"id": conv_id, "messages": []})
+    convo = memory_store.CONVERSATIONS.setdefault(
+        conv_id,
+        {
+            "id": conv_id,
+            "messages": [],
+            "created_at": datetime.now(timezone.utc),
+            "updated_at": datetime.now(timezone.utc),
+        },
+    )
 
 
 def append_message(
@@ -59,14 +61,6 @@ def append_message(
                 "created_at": timestamp,
             }
         )
-        conv_col.update_one(
-            {"_id": conv_id},
-            {
-                "$push": {"messages": msg_id},
-                "$set": {"updated_at": timestamp},
-            },
-            upsert=False,
-        )
         return
 
     convo = memory_store.CONVERSATIONS.setdefault(conv_id, {"id": conv_id, "messages": []})
@@ -79,6 +73,9 @@ def append_message(
         "created_at": timestamp,
     }
     convo.setdefault("messages", []).append(msg_id)
+    convo["updated_at"] = timestamp
+    convo["last_role"] = role
+    convo["message_count"] = convo.get("message_count", 0) + 1
 
 
 def get_messages(conv_id: str) -> List[Dict[str, Any]]:
