@@ -9,7 +9,8 @@ import AirportsList from '../components/AirportsList';
 import DestinationsList from '../components/DestinationsList';
 import AttractionsList from '../components/AttractionsList';
 import HotelHeroCard from '../components/HotelHeroCard';
-import { postChatMessage, streamChat } from '../lib/api';
+import ItineraryCards from '../components/ItineraryCards';
+import { postChatMessage, streamChat, getConversationState } from '../lib/api';
 import { ChatContext } from '../context/ChatContext';
 import { ensureConversationId } from '../lib/conversation';
 
@@ -46,7 +47,7 @@ const FinalTripPlannerPage = () => {
   const [cards, setCards] = useState([]);
   const [mapMarkers, setMapMarkers] = useState([]);
   const location = useLocation();
-  const { addMessage, conversationId, setConversationId } = useContext(ChatContext);
+  const { addMessage, conversationId, setConversationId, itineraryData, isItineraryDone, updateItineraryData } = useContext(ChatContext);
 
   // Maintain agent state across turns for follow-up Q&A
   const [agentState, setAgentState] = useState({});
@@ -75,6 +76,39 @@ const FinalTripPlannerPage = () => {
     await processUserText(`Suggest great destinations and places to visit around ${query}.`);
   };
 
+  // Function to check for itinerary data
+  const checkForItineraryData = async (convId) => {
+    try {
+      const stateData = await getConversationState(convId);
+      const state = stateData.state || {};
+      
+      if (state.itinerary_done && state.trip_plan) {
+        updateItineraryData(state.trip_plan, true);
+        
+        // Update map markers with all locations from the trip plan
+        const allLocations = [];
+        if (state.trip_plan.trip_plan) {
+          state.trip_plan.trip_plan.forEach(day => {
+            if (day.locations) {
+              day.locations.forEach(location => {
+                if (location.lat && location.lng) {
+                  allLocations.push({
+                    lat: location.lat,
+                    lon: location.lng,
+                    title: location.name
+                  });
+                }
+              });
+            }
+          });
+        }
+        setMapMarkers(allLocations);
+      }
+    } catch (error) {
+      console.error('Error checking itinerary data:', error);
+    }
+  };
+
   // Shared function to process a free-form user text via chatbot
   const processUserText = async (text) => {
     try {
@@ -90,10 +124,25 @@ const FinalTripPlannerPage = () => {
             const content = evt.content || '';
             if (content) addMessage({ text: content, sender: 'assistant' });
           }
+          if (evt.event === 'done') {
+            // Check for itinerary data after the stream is done
+            checkForItineraryData(convId);
+          }
         },
       });
     } catch (e) {
       addMessage({ text: e.message || 'Sorry, something went wrong.', sender: 'assistant' });
+    }
+  };
+
+  // Handler for location clicks
+  const handleLocationClick = (location) => {
+    if (location.lat && location.lng) {
+      setMapMarkers([{
+        lat: location.lat,
+        lon: location.lng,
+        title: location.name
+      }]);
     }
   };
 
@@ -110,6 +159,14 @@ const FinalTripPlannerPage = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Check for existing itinerary data on mount
+  useEffect(() => {
+    if (conversationId && !isItineraryDone) {
+      checkForItineraryData(conversationId);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [conversationId]);
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
@@ -158,6 +215,14 @@ const FinalTripPlannerPage = () => {
                     </div>
                   </div>
                 </div>
+                {/* Itinerary Cards - Show when itinerary is done */}
+                {isItineraryDone && itineraryData && (
+                  <ItineraryCards 
+                    tripPlan={itineraryData} 
+                    onLocationClick={handleLocationClick}
+                  />
+                )}
+
                 {/* Dynamic cards area */}
                 {cards.map((card) => (
                   <div key={card.id} className="bg-white border rounded-md p-4">

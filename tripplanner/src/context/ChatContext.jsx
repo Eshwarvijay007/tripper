@@ -15,6 +15,8 @@ export const ChatProvider = ({ children }) => {
     }
   ]);
   const [conversationId, setConversationIdState] = useState(() => getConversationIdFromCookie());
+  const [itineraryData, setItineraryData] = useState(null);
+  const [isItineraryDone, setIsItineraryDone] = useState(false);
 
   const addMessage = (message) => {
     setMessages((prevMessages) => {
@@ -43,8 +45,22 @@ export const ChatProvider = ({ children }) => {
     }
   };
 
+  const updateItineraryData = (data, isDone = false) => {
+    setItineraryData(data);
+    setIsItineraryDone(isDone);
+  };
+
   return (
-    <ChatContext.Provider value={{ messages, addMessage, updateLastMessage, conversationId, setConversationId }}>
+    <ChatContext.Provider value={{ 
+      messages, 
+      addMessage, 
+      updateLastMessage, 
+      conversationId, 
+      setConversationId,
+      itineraryData,
+      isItineraryDone,
+      updateItineraryData
+    }}>
       {children}
     </ChatContext.Provider>
   );

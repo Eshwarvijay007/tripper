@@ -132,3 +132,9 @@ export async function agentPlan(payload) {
   }
   return res.json();
 }
+
+export async function getConversationState(conversationId) {
+  const res = await fetch(`${API_BASE}/api/chat/state?conversation_id=${conversationId}`);
+  if (!res.ok) throw new Error(`Get state failed ${res.status}`);
+  return res.json();
+}
