@@ -2,7 +2,7 @@ import React, { useContext, useState } from 'react';
 import { ChatContext } from '../context/ChatContext';
 
 const ChatPanel = ({ onQuickAction, onUserMessage }) => {
-  const { messages, addMessage } = useContext(ChatContext);
+  const { messages, addMessage, isAssistantTyping } = useContext(ChatContext);
   const [inputValue, setInputValue] = useState('');
 
   // Initial assistant message now seeded in ChatContext
@@ -46,6 +46,18 @@ const ChatPanel = ({ onQuickAction, onUserMessage }) => {
             {msg.sender === 'user' && <GradientAvatar variant={index + 1} />}
           </div>
         ))}
+        {isAssistantTyping && (
+          <div className="flex items-start gap-3 my-4 justify-start" aria-live="polite" aria-label="Assistant is typing">
+            <GradientAvatar variant={messages.length} />
+            <div className="rounded-lg bg-gray-100">
+              <div className="typing-indicator">
+                <span className="typing-dot" />
+                <span className="typing-dot" />
+                <span className="typing-dot" />
+              </div>
+            </div>
+          </div>
+        )}
       </div>
       {/* Fixed bottom bar with credit counter and input */}
       <div className="absolute bottom-0 left-0 right-0 bg-white border-t">

@@ -16,7 +16,7 @@ if not _API_KEY:
     raise RuntimeError("Missing Google API key. Set GOOGLE_API_KEY or GEMINI_API_KEY.")
 
 llm = ChatGoogleGenerativeAI(
-    model="gemini-2.5-pro",
+    model="gemini-2.5-flash",
     temperature=0.7,
     google_api_key=_API_KEY,
 )

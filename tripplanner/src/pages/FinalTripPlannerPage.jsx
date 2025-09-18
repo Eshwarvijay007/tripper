@@ -47,7 +47,16 @@ const FinalTripPlannerPage = () => {
   const [cards, setCards] = useState([]);
   const [mapMarkers, setMapMarkers] = useState([]);
   const location = useLocation();
-  const { addMessage, conversationId, setConversationId, itineraryData, isItineraryDone, updateItineraryData } = useContext(ChatContext);
+  const {
+    addMessage,
+    conversationId,
+    setConversationId,
+    itineraryData,
+    isItineraryDone,
+    updateItineraryData,
+    startAssistantTyping,
+    stopAssistantTyping,
+  } = useContext(ChatContext);
 
   // Maintain agent state across turns for follow-up Q&A
   const [agentState, setAgentState] = useState({});
@@ -111,11 +120,12 @@ const FinalTripPlannerPage = () => {
 
   // Shared function to process a free-form user text via chatbot
   const processUserText = async (text) => {
+    const convId = conversationId || ensureConversationId();
+    if (convId && convId !== conversationId) {
+      setConversationId(convId);
+    }
+    startAssistantTyping();
     try {
-      const convId = conversationId || ensureConversationId();
-      if (convId && convId !== conversationId) {
-        setConversationId(convId);
-      }
       const { streamUrl } = await postChatMessage({ content: text, conversationId: convId });
       await streamChat({
         streamUrl,
@@ -132,6 +142,8 @@ const FinalTripPlannerPage = () => {
       });
     } catch (e) {
       addMessage({ text: e.message || 'Sorry, something went wrong.', sender: 'assistant' });
+    } finally {
+      stopAssistantTyping();
     }
   };
 

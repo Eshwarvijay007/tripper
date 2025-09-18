@@ -17,6 +17,7 @@ export const ChatProvider = ({ children }) => {
   const [conversationId, setConversationIdState] = useState(() => getConversationIdFromCookie());
   const [itineraryData, setItineraryData] = useState(null);
   const [isItineraryDone, setIsItineraryDone] = useState(false);
+  const [typingSessions, setTypingSessions] = useState(0);
 
   const addMessage = (message) => {
     setMessages((prevMessages) => {
@@ -50,6 +51,14 @@ export const ChatProvider = ({ children }) => {
     setIsItineraryDone(isDone);
   };
 
+  const startAssistantTyping = () => {
+    setTypingSessions((count) => count + 1);
+  };
+
+  const stopAssistantTyping = () => {
+    setTypingSessions((count) => Math.max(0, count - 1));
+  };
+
   return (
     <ChatContext.Provider value={{ 
       messages, 
@@ -59,7 +68,10 @@ export const ChatProvider = ({ children }) => {
       setConversationId,
       itineraryData,
       isItineraryDone,
-      updateItineraryData
+      updateItineraryData,
+      isAssistantTyping: typingSessions > 0,
+      startAssistantTyping,
+      stopAssistantTyping
     }}>
       {children}
     </ChatContext.Provider>
