@@ -16,6 +16,43 @@ def _mongo_collections() -> tuple[Optional[Collection], Optional[Collection]]:
     return db["conversations"], db["messages"]
 
 
+def get_conversation_state(conv_id: str) -> Optional[Dict[str, Any]]:
+    """Return persisted conversation state if available."""
+    conv_col, _ = _mongo_collections()
+    if conv_col is not None:
+        doc = conv_col.find_one({"_id": conv_id}, projection={"state": 1})
+        if not doc:
+            return None
+        return doc.get("state") or None
+    convo = memory_store.CONVERSATIONS.get(conv_id)
+    if not convo:
+        return None
+    return convo.get("state")
+
+
+def set_conversation_state(conv_id: str, state: Dict[str, Any]) -> None:
+    """Persist conversation state for future turns."""
+    conv_col, _ = _mongo_collections()
+    timestamp = datetime.now(timezone.utc)
+    if conv_col is not None:
+        conv_col.update_one(
+            {"_id": conv_id},
+            {
+                "$set": {
+                    "state": state,
+                    "updated_at": timestamp,
+                },
+                "$setOnInsert": {"created_at": timestamp},
+                "$inc": {"message_count": 0},
+            },
+            upsert=True,
+        )
+        return
+    convo = memory_store.CONVERSATIONS.setdefault(conv_id, {"id": conv_id, "messages": []})
+    convo["state"] = state
+    convo["updated_at"] = timestamp
+
+
 def ensure_conversation(conv_id: str) -> None:
     conv_col, _ = _mongo_collections()
     if conv_col is not None:

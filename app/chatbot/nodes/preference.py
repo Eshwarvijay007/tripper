@@ -1,4 +1,69 @@
 import json
+import re
+from typing import Any, Dict
+
+
+def _extract_json_object(text: str) -> Dict[str, Any]:
+    """Best-effort extraction of a JSON object from LLM text.
+    Tries direct parse, fenced blocks, and brace-matching fallback.
+    Returns {} on failure.
+    """
+    if not text:
+        return {}
+    # 1) direct
+    try:
+        return json.loads(text)
+    except Exception:
+        pass
+    # 2) fenced ```json ... ``` or ``` ... ```
+    fenced = re.search(r"```(?:json)?\s*([\s\S]*?)```", text, re.IGNORECASE)
+    if fenced:
+        inner = fenced.group(1).strip()
+        try:
+            return json.loads(inner)
+        except Exception:
+            pass
+    # 3) brace matching: take first {...} block
+    start = text.find('{')
+    end = text.rfind('}')
+    if start != -1 and end != -1 and end > start:
+        candidate = text[start : end + 1]
+        try:
+            return json.loads(candidate)
+        except Exception:
+            pass
+    return {}
+
+
+def _normalize_prefs(prefs: Dict[str, Any]) -> Dict[str, Any]:
+    # Map common synonyms
+    mapping = {
+        'destination': 'location',
+        'city': 'location',
+        'where': 'location',
+        'days': 'num_days',
+        'duration': 'num_days',
+        'start_date': 'trip_start_day',
+        'date': 'trip_start_day',
+        'dates': 'trip_start_day',
+        'type': 'trip_type',
+    }
+    out: Dict[str, Any] = {}
+    for k, v in (prefs or {}).items():
+        key = mapping.get(k, k)
+        out[key] = v
+
+    # Coerce num_days to int if possible
+    if 'num_days' in out and out['num_days'] is not None:
+        val = out['num_days']
+        if isinstance(val, str):
+            m = re.search(r"\d+", val)
+            if m:
+                out['num_days'] = int(m.group(0))
+        elif isinstance(val, float):
+            out['num_days'] = int(val)
+    return out
+
 
 def preference_node(state, llm):
     summary = state.get("summary", "")
@@ -36,17 +101,21 @@ Conversation summary:
 Current user message:
 {query}
 
-Return JSON with only the fields that need to be updated based on the current message:
+Output format requirements:
+- Return ONLY a JSON object, no markdown, no comments, no surrounding text.
+- Include only fields that are NEW or UPDATED in the current message.
+- Keys must be exactly: location, trip_type, num_days, trip_start_day, budget.
+- Example: {{"location": "Paris", "num_days": 5}}
+
+Now return the JSON object:
 """
 
     res = llm.invoke(prompt)
 
-    try:
-        # Parse the response content as JSON
-        new_prefs = json.loads(getattr(res, "content", "{}") or "{}")
-    except Exception:
-        # Fallback: empty dict means no updates
-        new_prefs = {}
+    # Parse response robustly
+    raw = getattr(res, "content", "") or ""
+    new_prefs = _extract_json_object(raw)
+    new_prefs = _normalize_prefs(new_prefs)
 
     # Update preferences incrementally (dict-based)
     prefs = state.get("preferences") or {}

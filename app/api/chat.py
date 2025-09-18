@@ -1,6 +1,7 @@
 from __future__ import annotations
 import uuid
 from typing import Iterator
+import json
 
 from fastapi import APIRouter, Query
 from fastapi.responses import StreamingResponse
@@ -11,6 +12,8 @@ from ..services.conversation_repository import (
     get_last_user_message,
     get_messages,
     set_conversation_stopped,
+    get_conversation_state,
+    set_conversation_state,
 )
 from ..chatbot.graph import process_message
 
@@ -37,20 +40,47 @@ def post_message(payload: dict) -> dict:
 def _stream_assistant(conv_id: str) -> Iterator[bytes]:
     user_msg = get_last_user_message(conv_id)
     if not user_msg:
-        yield str({"event": "error", "message": "No conversation or message found"}).encode() + b"\n"
+        yield (json.dumps({"event": "error", "message": "No conversation or message found"}) + "\n").encode("utf-8")
         return
 
-    yield (str({"event": "start", "conversation_id": conv_id}) + "\n").encode("utf-8")
+    yield (json.dumps({"event": "start", "conversation_id": conv_id}) + "\n").encode("utf-8")
     try:
-        result = process_message(user_message=str(user_msg.get("content") or ""))
+        # Load previous state if any
+        prev_state = get_conversation_state(conv_id) or {}
+        # Also construct rolling history from stored messages (last 4)
+        try:
+            msgs = get_messages(conv_id)
+            history = [
+                {"role": m.get("role", "user"), "content": m.get("content", "")}
+                for m in msgs if m.get("content") is not None
+            ]
+            # Keep last 4 messages to match state expectations
+            if len(history) > 4:
+                history = history[-4:]
+            if isinstance(prev_state, dict):
+                prev_state.setdefault("history", history)
+            else:
+                prev_state = {"history": history}
+        except Exception:
+            # Non-fatal if history cannot be built
+            pass
+
+        result = process_message(
+            user_message=str(user_msg.get("content") or ""),
+            previous_state=prev_state if isinstance(prev_state, dict) else None,
+        )
         text = result.get("response") or ""
-        yield (str({"event": "message", "role": "assistant", "content": text}) + "\n").encode("utf-8")
+        yield (json.dumps({"event": "message", "role": "assistant", "content": text}) + "\n").encode("utf-8")
         if text:
             assistant_id = str(uuid.uuid4())
             append_message(conv_id, assistant_id, "assistant", text)
-        yield (str({"event": "done"}) + "\n").encode("utf-8")
+        # Persist updated state for future turns
+        state_out = result.get("state")
+        if isinstance(state_out, dict):
+            set_conversation_state(conv_id, state_out)
+        yield (json.dumps({"event": "done"}) + "\n").encode("utf-8")
     except Exception as e:
-        yield (str({"event": "error", "message": str(e)}) + "\n").encode("utf-8")
+        yield (json.dumps({"event": "error", "message": str(e)}) + "\n").encode("utf-8")
 
 
 @router.get("/stream/{conversation_id}")
@@ -68,4 +98,3 @@ def list_conversation_messages(conversation_id: str = Query(...)) -> dict:
 def stop_stream(conversation_id: str):
     set_conversation_stopped(conversation_id, True)
     return {"stopped": True}
-
