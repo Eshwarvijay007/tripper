@@ -2,14 +2,20 @@
 def summary_node(state, llm):
     query = state.get("query", "")
     summary = state.get("summary", "")
-    history = state.get("history", [])[-4:]
-    
-    # Add current message to history
+    history = state.get("history") or []
+
+    # Ensure history is a list and add current message
+    if not isinstance(history, list):
+        history = []
     if query:
-        state.add_message_to_history("user", query)
-    
+        history.append({"role": "user", "content": query})
+        # Keep only last 4 entries
+        if len(history) > 4:
+            history = history[-4:]
+        state["history"] = history
+
     formatted_history = "\n".join(
-        [f"{msg['role'].capitalize()}: {msg['content']}" for msg in history]
+        [f"{(msg.get('role') or 'user').capitalize()}: {msg.get('content', '')}" for msg in history]
     )
 
     prompt = f"""
@@ -35,5 +41,5 @@ Return an updated summary in plain text.
 """
 
     res = llm.invoke(prompt)
-    state["summary"] = res.content
+    state["summary"] = getattr(res, "content", "")
     return state

@@ -43,19 +43,25 @@ Return JSON with only the fields that need to be updated based on the current me
 
     try:
         # Parse the response content as JSON
-        new_prefs = json.loads(res.content)
+        new_prefs = json.loads(getattr(res, "content", "{}") or "{}")
     except Exception:
         # Fallback: empty dict means no updates
         new_prefs = {}
 
-    # Update preferences incrementally
-    state.update_preferences(new_prefs)
+    # Update preferences incrementally (dict-based)
+    prefs = state.get("preferences") or {}
+    if not isinstance(prefs, dict):
+        prefs = {}
+    for key, value in (new_prefs or {}).items():
+        if value is not None:
+            prefs[key] = value
+    state["preferences"] = prefs
     
     # Check for missing required fields
     required_fields = ["location", "num_days", "trip_start_day"]
     missing = []
     for field in required_fields:
-        if not state.preferences.get(field):
+        if not prefs.get(field):
             missing.append(field)
     
     state["missing_fields"] = missing
