@@ -98,3 +98,13 @@ def list_conversation_messages(conversation_id: str = Query(...)) -> dict:
 def stop_stream(conversation_id: str):
     set_conversation_stopped(conversation_id, True)
     return {"stopped": True}
+
+
+@router.get("/state")
+def get_state(conversation_id: str = Query(...), include_messages: bool = Query(False)) -> dict:
+    """Debug: Inspect persisted conversation state (and optionally messages)."""
+    state = get_conversation_state(conversation_id) or {}
+    data: dict = {"conversation_id": conversation_id, "state": state}
+    if include_messages:
+        data["messages"] = get_messages(conversation_id)
+    return data

@@ -41,5 +41,6 @@ Return an updated summary in plain text.
 """
 
     res = llm.invoke(prompt)
-    state["summary"] = getattr(res, "content", "")
+    state["summary"] = get_text(res)
     return state
+from ..utils import get_text
