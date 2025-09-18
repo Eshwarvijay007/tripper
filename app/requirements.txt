@@ -3,8 +3,8 @@ uvicorn==0.30.1
 pydantic==2.8.2
 requests==2.32.3
 python-dotenv==1.0.1
-# Align with langchain-google-genai (requires >=0.8,<0.9)
 google-generativeai>=0.8.0,<0.9.0
+google-ai-generativelanguage==0.6.15  # Add this line
 tenacity==9.0.0
 haversine==2.8.1
 langgraph==0.2.45
