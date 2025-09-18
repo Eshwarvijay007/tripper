@@ -31,9 +31,29 @@ export const ChatProvider = ({ children }) => {
 
   const updateLastMessage = (text) => {
     setMessages((prevMessages) => {
+      if (!prevMessages.length) return prevMessages;
       const newMessages = [...prevMessages];
-      newMessages[newMessages.length - 1].text += text;
+      newMessages[newMessages.length - 1] = {
+        ...newMessages[newMessages.length - 1],
+        text: (newMessages[newMessages.length - 1].text || '') + text,
+      };
       return newMessages;
+    });
+  };
+
+  const setLastAssistantMessage = (text) => {
+    setMessages((prevMessages) => {
+      if (!prevMessages.length) {
+        return [{ sender: 'assistant', text }];
+      }
+      const newMessages = [...prevMessages];
+      for (let i = newMessages.length - 1; i >= 0; i -= 1) {
+        if (newMessages[i].sender === 'assistant') {
+          newMessages[i] = { ...newMessages[i], text };
+          return newMessages;
+        }
+      }
+      return [...newMessages, { sender: 'assistant', text }];
     });
   };
 
@@ -71,7 +91,8 @@ export const ChatProvider = ({ children }) => {
       updateItineraryData,
       isAssistantTyping: typingSessions > 0,
       startAssistantTyping,
-      stopAssistantTyping
+      stopAssistantTyping,
+      setLastAssistantMessage
     }}>
       {children}
     </ChatContext.Provider>

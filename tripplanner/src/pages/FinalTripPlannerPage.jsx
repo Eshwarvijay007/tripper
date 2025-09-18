@@ -56,6 +56,7 @@ const FinalTripPlannerPage = () => {
     updateItineraryData,
     startAssistantTyping,
     stopAssistantTyping,
+    setLastAssistantMessage,
   } = useContext(ChatContext);
 
   // Maintain agent state across turns for follow-up Q&A
@@ -125,6 +126,7 @@ const FinalTripPlannerPage = () => {
       setConversationId(convId);
     }
     startAssistantTyping();
+    let firstAssistantChunk = true;
     try {
       const { streamUrl } = await postChatMessage({ content: text, conversationId: convId });
       await streamChat({
@@ -132,7 +134,13 @@ const FinalTripPlannerPage = () => {
         onEvent: (evt) => {
           if (evt.event === 'message' && evt.role === 'assistant') {
             const content = evt.content || '';
-            if (content) addMessage({ text: content, sender: 'assistant' });
+            if (!content) return;
+            if (firstAssistantChunk) {
+              addMessage({ text: content, sender: 'assistant' });
+              firstAssistantChunk = false;
+            } else {
+              setLastAssistantMessage(content);
+            }
           }
           if (evt.event === 'done') {
             // Check for itinerary data after the stream is done
@@ -141,7 +149,12 @@ const FinalTripPlannerPage = () => {
         },
       });
     } catch (e) {
-      addMessage({ text: e.message || 'Sorry, something went wrong.', sender: 'assistant' });
+      const fallback = e.message || 'Sorry, something went wrong.';
+      if (firstAssistantChunk) {
+        addMessage({ text: fallback, sender: 'assistant' });
+      } else {
+        setLastAssistantMessage(fallback);
+      }
     } finally {
       stopAssistantTyping();
     }
