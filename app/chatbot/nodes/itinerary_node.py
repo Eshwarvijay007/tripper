@@ -1,4 +1,5 @@
 import json
+from ..utils import get_text
 
 def itinerary_node(state, llm):
     """Generate trip itinerary based on collected preferences"""
@@ -53,7 +54,7 @@ Format as a clear, easy-to-read itinerary. Be enthusiastic and helpful!
 
     try:
         res = llm.invoke(prompt)
-        itinerary_text = res.content.strip()
+        itinerary_text = get_text(res).strip()
         
         # Save both the generated itinerary and mark as complete
         state["answer"] = itinerary_text

@@ -39,7 +39,7 @@ Answer with exactly one label: `trip_planning` or `small_talk`
 
     try:
         res = llm.invoke(prompt)
-        intent = res.content.strip().lower()
+        intent = get_text(res).strip().lower()
         
         # Validate the response
         if intent in ["trip_planning", "small_talk"]:
@@ -54,3 +54,4 @@ Answer with exactly one label: `trip_planning` or `small_talk`
         state["intent"] = "trip_planning"
     
     return state
+from ..utils import get_text

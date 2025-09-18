@@ -35,14 +35,18 @@ export async function streamChat({ streamUrl, onEvent }) {
       const line = buf.slice(0, idx).trim();
       buf = buf.slice(idx + 1);
       if (!line) continue;
-      // Line is a Python-like dict string in our stub; try to coerce to JSON
+      // Prefer proper JSON lines; fallback to legacy coercion for Python-like dict strings
       let evt = null;
       try {
-        // convert single quotes to double quotes for JSON parse in stub environment
-        const jsonish = line.replace(/'/g, '"');
-        evt = JSON.parse(jsonish);
+        evt = JSON.parse(line);
       } catch {
-        // fallback no-op
+        try {
+          // Legacy fallback: naive single→double quote replacement (may fail on complex content)
+          const jsonish = line.replace(/'/g, '"');
+          evt = JSON.parse(jsonish);
+        } catch {
+          // swallow
+        }
       }
       if (evt && onEvent) onEvent(evt);
     }

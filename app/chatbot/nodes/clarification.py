@@ -36,7 +36,7 @@ Ask for the missing details in a friendly way:
 
         try:
             res = llm.invoke(prompt)
-            state["answer"] = res.content.strip()
+            state["answer"] = get_text(res).strip()
         except Exception as e:
             print(f"Error in clarification node: {e}")
             # Fallback to simple message
@@ -50,3 +50,4 @@ Ask for the missing details in a friendly way:
     # If nothing is missing, proceed without setting answer
     state["answer"] = None
     return state
+from ..utils import get_text
