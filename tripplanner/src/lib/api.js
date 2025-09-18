@@ -1,4 +1,5 @@
-export const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8000';
+// Default to same-origin (served by FastAPI) unless VITE_API_BASE is set
+export const API_BASE = import.meta.env.VITE_API_BASE || '';
 
 export async function postChatMessage({ content, conversationId }) {
   const res = await fetch(`${API_BASE}/api/chat/messages`, {

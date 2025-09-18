@@ -14,23 +14,25 @@ ENV VIRTUAL_ENV=/opt/venv
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 RUN pip install --no-cache-dir -r app/requirements.txt
 
-# Frontend dependencies (use npm ci if lockfile exists)
+# Prepare and build frontend (Vite)
 COPY tripplanner/package*.json tripplanner/
 RUN bash -lc 'cd tripplanner && (npm ci || npm install)'
-
-# Copy source
-COPY app/ app/
 COPY tripplanner/ tripplanner/
+RUN bash -lc 'cd tripplanner && npm run build && mkdir -p /opt/frontend && cp -a dist/. /opt/frontend/'
 
-# Startup script to run both frontend and backend
+# Copy backend source
+COPY app/ app/
+
+# Startup script to run backend (serves static build)
 COPY start.sh /usr/local/bin/start.sh
 RUN chmod +x /usr/local/bin/start.sh
 
-# Expose common dev ports
+# Expose dev ports locally; Cloud Run injects $PORT
 EXPOSE 8000 5173 3000
 
-# Defaults (can be overridden at runtime)
+# Defaults (override at runtime as needed)
 ENV BACKEND_HOST=0.0.0.0 \
-    BACKEND_PORT=8000
+    BACKEND_PORT=8000 \
+    FRONTEND_DIST=/opt/frontend
 
 CMD ["/usr/local/bin/start.sh"]

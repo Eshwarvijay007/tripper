@@ -1,5 +1,3 @@
-// TripPlanner.ai Clone - Interactive JavaScript
-
 document.addEventListener('DOMContentLoaded', function () {
     // Initialize all interactive features
     initLazyLoading();
