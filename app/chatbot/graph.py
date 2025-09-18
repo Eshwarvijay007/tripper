@@ -1,18 +1,24 @@
 from langgraph.graph import StateGraph, END
 from langchain_google_genai import ChatGoogleGenerativeAI
-from nodes.summary_node import summary_node
-from nodes.intent import intent_node
-from nodes.preference import preference_node
-from nodes.itinerary_node import itinerary_node
-from nodes.small_talk import small_talk_node
-from nodes.clarification import clarification_node
-from state import TripState
+import os
+from .nodes.summary_node import summary_node
+from .nodes.intent import intent_node
+from .nodes.preference import preference_node
+from .nodes.itinerary_node import itinerary_node
+from .nodes.small_talk import small_talk_node
+from .nodes.clarification import clarification_node
+from .state import TripState
 
 # Initialize Gemini LLM using langchain_google_genai
+# Prefer explicit API key over ADC to avoid runtime credential issues
+_API_KEY = os.getenv("GOOGLE_API_KEY") or os.getenv("GEMINI_API_KEY")
+if not _API_KEY:
+    raise RuntimeError("Missing Google API key. Set GOOGLE_API_KEY or GEMINI_API_KEY.")
+
 llm = ChatGoogleGenerativeAI(
     model="gemini-1.5-flash",
     temperature=0.7,
-    convert_system_message_to_human=True
+    google_api_key=_API_KEY,
 )
 
 #TODO:
@@ -35,35 +41,42 @@ def safe_node_wrapper(node_func, node_name):
 # Create the graph
 graph = StateGraph(TripState)
 
-# Add nodes with error handling
-graph.add_node("summary", safe_node_wrapper(summary_node, "summary"))
-graph.add_node("intent", safe_node_wrapper(intent_node, "intent"))
-graph.add_node("small_talk", safe_node_wrapper(small_talk_node, "small_talk"))
-graph.add_node("preferences", safe_node_wrapper(preference_node, "preferences"))
-graph.add_node("clarification", safe_node_wrapper(clarification_node, "clarification"))
-graph.add_node("itinerary", safe_node_wrapper(itinerary_node, "itinerary"))
+# Add nodes with error handling (avoid names that collide with state keys)
+NODE_SUMMARY = "node_summary"
+NODE_INTENT = "node_intent"
+NODE_SMALL_TALK = "node_small_talk"
+NODE_PREFERENCES = "node_preferences"
+NODE_CLARIFICATION = "node_clarification"
+NODE_ITINERARY = "node_itinerary"
+
+graph.add_node(NODE_SUMMARY, safe_node_wrapper(summary_node, NODE_SUMMARY))
+graph.add_node(NODE_INTENT, safe_node_wrapper(intent_node, NODE_INTENT))
+graph.add_node(NODE_SMALL_TALK, safe_node_wrapper(small_talk_node, NODE_SMALL_TALK))
+graph.add_node(NODE_PREFERENCES, safe_node_wrapper(preference_node, NODE_PREFERENCES))
+graph.add_node(NODE_CLARIFICATION, safe_node_wrapper(clarification_node, NODE_CLARIFICATION))
+graph.add_node(NODE_ITINERARY, safe_node_wrapper(itinerary_node, NODE_ITINERARY))
 
 # Set entry point
-graph.set_entry_point("summary")
+graph.set_entry_point(NODE_SUMMARY)
 
 # Edges
-graph.add_edge("summary", "intent")
+graph.add_edge(NODE_SUMMARY, NODE_INTENT)
 
 # Route based on intent with fallback
 def route_intent(state: TripState):
     intent = state.get("intent", "").lower()
     if intent == "small_talk":
-        return "small_talk"
+        return NODE_SMALL_TALK
     elif intent in ["trip_planning"]:
-        return "preferences"
+        return NODE_PREFERENCES
     else:
         # Default to preferences for ambiguous cases
-        return "preferences"
+        return NODE_PREFERENCES
 
-graph.add_conditional_edges("intent", route_intent)
+graph.add_conditional_edges(NODE_INTENT, route_intent)
 
 # Preferences → Clarification
-graph.add_edge("preferences", "clarification")
+graph.add_edge(NODE_PREFERENCES, NODE_CLARIFICATION)
 
 # Clarification → either end (to ask user) or go to itinerary
 def route_clarification(state: TripState):
@@ -75,13 +88,13 @@ def route_clarification(state: TripState):
         return END
     else:
         # All required info collected, proceed to itinerary
-        return "itinerary"
+        return NODE_ITINERARY
 
-graph.add_conditional_edges("clarification", route_clarification)
+graph.add_conditional_edges(NODE_CLARIFICATION, route_clarification)
 
 # Small talk and itinerary both end
-graph.add_edge("small_talk", END)
-graph.add_edge("itinerary", END)
+graph.add_edge(NODE_SMALL_TALK, END)
+graph.add_edge(NODE_ITINERARY, END)
 
 # Compile the graph
 try:

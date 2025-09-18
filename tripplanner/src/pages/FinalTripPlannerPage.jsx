@@ -9,7 +9,7 @@ import AirportsList from '../components/AirportsList';
 import DestinationsList from '../components/DestinationsList';
 import AttractionsList from '../components/AttractionsList';
 import HotelHeroCard from '../components/HotelHeroCard';
-import { searchHotels, getFlightDestinations, getBookingDestinations, getNearbyAttractions, getPlacesSuggestions, agentPlan } from '../lib/api';
+import { postChatMessage, streamChat } from '../lib/api';
 import { ChatContext } from '../context/ChatContext';
 import { ensureConversationId } from '../lib/conversation';
 
@@ -61,140 +61,39 @@ const FinalTripPlannerPage = () => {
   }, []);
 
   const handleShowHotels = async () => {
-    try {
-      const city = tripData.legs?.[0]?.city || 'Seville';
-      const res = await searchHotels({
-        destination: { city },
-        dates: defaultDates,
-        rooms: 1,
-        adults: 2,
-        children: 0,
-        currency: 'INR'
-      });
-      setCards((prev) => [
-        ...prev,
-        {
-          id: `${Date.now()}`,
-          type: 'hotels',
-          title: `Hotels near ${city}`,
-          items: res.options || [],
-        },
-      ]);
-    } catch (e) {
-      setCards((prev) => [
-        ...prev,
-        { id: `${Date.now()}`, type: 'error', title: 'Hotels', error: e.message || 'Failed to load hotels' },
-      ]);
-    }
+    const city = tripData.legs?.[0]?.city || 'Seville';
+    await processUserText(`Show me good hotel options in ${city} for my trip.`);
   };
 
   const handleShowAirports = async () => {
-    try {
-      const query = tripData.legs?.[0]?.city || 'Seville';
-      const res = await getFlightDestinations(query);
-      setCards((prev) => [
-        ...prev,
-        {
-          id: `${Date.now()}`,
-          type: 'airports',
-          title: `Airports near ${query}`,
-          items: res.items || [],
-        },
-      ]);
-    } catch (e) {
-      setCards((prev) => [
-        ...prev,
-        { id: `${Date.now()}`, type: 'error', title: 'Airports', error: e.message || 'Failed to load airports' },
-      ]);
-    }
+    const query = tripData.legs?.[0]?.city || 'Seville';
+    await processUserText(`What are the best airports and flight options around ${query}?`);
   };
 
   const handleShowDestinations = async () => {
-    try {
-      const query = tripData.legs?.[0]?.city || 'Hubli';
-      // Prefer Google Places suggestions; fallback to Booking if needed
-      let res;
-      try {
-        res = await getPlacesSuggestions(query);
-      } catch {
-        res = await getBookingDestinations(query);
-      }
-      const items = res.items || [];
-      setCards((prev) => [
-        ...prev,
-        {
-          id: `${Date.now()}`,
-          type: 'destinations',
-          title: `Places for ${query}`,
-          items,
-        },
-      ]);
-    } catch (e) {
-      setCards((prev) => [
-        ...prev,
-        { id: `${Date.now()}`, type: 'error', title: 'Destinations', error: e.message || 'Failed to load destinations' },
-      ]);
-    }
+    const query = tripData.legs?.[0]?.city || 'Hubli';
+    await processUserText(`Suggest great destinations and places to visit around ${query}.`);
   };
 
-  // Shared function to process a free-form user text via agent
+  // Shared function to process a free-form user text via chatbot
   const processUserText = async (text) => {
     try {
       const convId = conversationId || ensureConversationId();
       if (convId && convId !== conversationId) {
         setConversationId(convId);
       }
-      const res = await agentPlan({ user_text: text, state: agentState, conversation_id: convId });
-      if (res.need_info) {
-        const qs = res.questions || [];
-        setAgentState(res.state || {});
-        setPendingQuestions(qs);
-        if (qs.length) {
-          const combined = qs.length === 1
-            ? qs[0]
-            : `To tailor your trip better, could you clarify: ${qs.map(q => q.endsWith('?') ? q : q + '?').join(' ')}`;
-          addMessage({ text: combined, sender: 'assistant' });
-        }
-        return;
-      }
-
-      setPendingQuestions([]);
-      const itinerary = res.itinerary;
-      const hotelOptions = res.hotel_options || [];
-      // Render itinerary as a card
-      // Pick top-rated stay for a hero card
-      let topHotel = null;
-      if (hotelOptions.length) {
-        topHotel = [...hotelOptions].sort((a, b) => (b.stars || 0) - (a.stars || 0))[0];
-      }
-
-      setCards([
-        {
-          id: `${Date.now()}`,
-          type: 'itinerary',
-          title: itinerary.trip_title || 'Planned Itinerary',
-          itinerary,
-        },
-        ...(topHotel ? [{ id: `${Date.now()}_hs`, type: 'hotel_single', title: 'Your Stay', item: topHotel }] : []),
-      ]);
-
-      // Place markers from activities if present
-      const markers = [];
-      for (const d of itinerary.days || []) {
-        for (const a of (d.activities || [])) {
-          const loc = a.location || {};
-          if (typeof loc.lat === 'number' && typeof loc.lon === 'number') {
-            markers.push({ lat: loc.lat, lon: loc.lon, title: a.name });
+      const { streamUrl } = await postChatMessage({ content: text, conversationId: convId });
+      await streamChat({
+        streamUrl,
+        onEvent: (evt) => {
+          if (evt.event === 'message' && evt.role === 'assistant') {
+            const content = evt.content || '';
+            if (content) addMessage({ text: content, sender: 'assistant' });
           }
-        }
-      }
-      // Add map marker for selected stay (if any)
-      if (topHotel && typeof topHotel.lat === 'number' && typeof topHotel.lon === 'number') {
-        markers.push({ lat: topHotel.lat, lon: topHotel.lon, title: topHotel.name });
-      }
-      if (markers.length) setMapMarkers(markers);
+        },
+      });
     } catch (e) {
-      setCards([{ id: `${Date.now()}`, type: 'error', title: 'Agent', error: e.message || 'Failed to plan trip' }]);
+      addMessage({ text: e.message || 'Sorry, something went wrong.', sender: 'assistant' });
     }
   };
 
@@ -228,7 +127,7 @@ const FinalTripPlannerPage = () => {
               if (lower.includes('hotel')) {
                 handleShowHotels();
               } else if (lower.includes('flight')) {
-                handleShowAirports();
+                processUserText('Suggest good flight options based on my trip.');
               } else if (lower.includes('destination') || lower.includes('place')) {
                 handleShowDestinations();
               }
@@ -297,23 +196,7 @@ const FinalTripPlannerPage = () => {
                           setMapMarkers(markers);
                         }}
                         onShowAttractions={async (d) => {
-                          try {
-                            const res = await getNearbyAttractions({ lat: d.lat, lon: d.lon });
-                            const items = res.items || [];
-                            setCards((prev) => [
-                              ...prev,
-                              {
-                                id: `${Date.now()}`,
-                                type: 'attractions',
-                                title: `Attractions near ${d.name}`,
-                                items,
-                              },
-                            ]);
-                            const markers = (items || []).filter(x => typeof x.lat === 'number' && typeof x.lon === 'number').map(x => ({ lat: x.lat, lon: x.lon, title: x.name }));
-                            setMapMarkers(markers);
-                          } catch (e) {
-                            setCards((prev) => [...prev, { id: `${Date.now()}`, type: 'error', title: 'Attractions', error: e.message || 'Failed to load attractions' }]);
-                          }
+                          await processUserText(`Suggest popular attractions near ${d.name}.`);
                         }}
                       />
                     )}

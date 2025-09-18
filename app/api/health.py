@@ -1,9 +1,10 @@
+from __future__ import annotations
 from fastapi import APIRouter
 
-router = APIRouter(prefix="/api")
+router = APIRouter(prefix="/api/health", tags=["health"])
 
 
-@router.get("/healthz")
-def healthz():
-    return {"status": "ok"}
+@router.get("")
+def health() -> dict:
+    return {"ok": True}
 
