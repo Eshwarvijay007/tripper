@@ -102,35 +102,179 @@ def _extract_date_iso(text: str) -> str | None:
     return None
 
 
+# --- Heuristic fallback extractors (used when LLM JSON is missing) ---
+_ALLOWED_TRIP_TYPES = [
+    "Adventure","Leisure","Business","Wellness","Cultural","Romantic","Family","Solo",
+    "Friends/Group","Luxury","Budget/Backpacking","Eco/Nature","Spiritual/Pilgrimage","Food & Wine","Festival/Event"
+]
+
+_TRIP_TYPE_SYNONYMS = {
+    "backpacking": "Budget/Backpacking",
+    "budget": "Budget/Backpacking",
+    "cheap": "Budget/Backpacking",
+    "food": "Food & Wine",
+    "wine": "Food & Wine",
+    "culinary": "Food & Wine",
+    "gourmet": "Food & Wine",
+    "hike": "Eco/Nature",
+    "hiking": "Eco/Nature",
+    "nature": "Eco/Nature",
+    "outdoors": "Eco/Nature",
+    "festival": "Festival/Event",
+    "event": "Festival/Event",
+    "pilgrimage": "Spiritual/Pilgrimage",
+    "spiritual": "Spiritual/Pilgrimage",
+    "temple": "Spiritual/Pilgrimage",
+    "museum": "Cultural",
+    "history": "Cultural",
+    "cultural": "Cultural",
+    "romantic": "Romantic",
+    "honeymoon": "Romantic",
+    "family": "Family",
+    "kids": "Family",
+    "solo": "Solo",
+    "friends": "Friends/Group",
+    "group": "Friends/Group",
+    "luxury": "Luxury",
+    "resort": "Luxury",
+    "adventure": "Adventure",
+    "business": "Business",
+    "wellness": "Wellness",
+    "spa": "Wellness",
+    "relax": "Leisure",
+    "leisure": "Leisure",
+}
+
+def _fallback_extract_trip_type(text: str) -> list | None:
+    if not text:
+        return None
+    t = text.lower()
+    found = []
+    # Exact allowed labels
+    for label in _ALLOWED_TRIP_TYPES:
+        if label.lower() in t:
+            found.append(label)
+    # Synonyms
+    for word, mapped in _TRIP_TYPE_SYNONYMS.items():
+        if word in t and mapped not in found:
+            found.append(mapped)
+    return found or None
+
+def _fallback_extract_num_days(text: str) -> int | None:
+    if not text:
+        return None
+    # e.g., "5 days", "5-day", "for 5 days"
+    m = re.search(r"\b(\d{1,3})\s*-(?:day|days)\b", text, re.IGNORECASE)
+    if not m:
+        m = re.search(r"\b(?:for\s+)?(\d{1,3})\s*(?:day|days)\b", text, re.IGNORECASE)
+    if m:
+        try:
+            return int(m.group(1))
+        except Exception:
+            return None
+    return None
+
+def _fallback_extract_budget(text: str) -> str | None:
+    if not text:
+        return None
+    # Match currency code or symbol + amount
+    m = re.search(r"\b(?:USD|EUR|INR|GBP)\s*[\$€£₹]?\s*[0-9][0-9,]*(?:\.[0-9]{1,2})?\b", text, re.IGNORECASE)
+    if not m:
+        m = re.search(r"[\$€£₹]\s*[0-9][0-9,]*(?:\.[0-9]{1,2})?\b", text)
+    if m:
+        return m.group(0).strip()
+    return None
+
+def _fallback_extract_location(text: str) -> str | None:
+    if not text:
+        return None
+    # Prefer "to <Place>" pattern
+    m = re.search(r"\bto\s+([A-Z][A-Za-z\-'&\. ]{1,60})\b", text)
+    if m:
+        cand = m.group(1).strip()
+        # Stop at common trailing terms
+        cand = re.split(r"\s+(?:for|on|from|with|about|during|next|this|starting)\b", cand)[0].strip()
+        return cand if cand else None
+    # Fallback "in <Place>" but avoid months
+    months = "jan feb mar apr may jun jul aug sep sept oct nov dec january february march april june july august september october november december".split()
+    m = re.search(r"\bin\s+([A-Z][A-Za-z\-'&\. ]{1,60})\b", text)
+    if m:
+        cand = m.group(1).strip()
+        first = cand.split()[0].lower()
+        if first not in months:
+            cand = re.split(r"\s+(?:for|on|from|with|about|during|next|this|starting)\b", cand)[0].strip()
+            if cand:
+                return cand
+    # Last resort: any capitalized word sequence (likely a place)
+    m = re.search(r"\b([A-Z][A-Za-z\-'&\.]+(?:\s+[A-Z][A-Za-z\-'&\.]+){0,3})\b", text)
+    if m:
+        return m.group(1).strip()
+    return None
+
+def _fallback_extract_from_text(text: str) -> Dict[str, Any]:
+    out: Dict[str, Any] = {
+        "location": None,
+        "trip_type": None,
+        "num_days": None,
+        "trip_start_day": None,
+        "budget": None,
+    }
+    if not text:
+        return out
+    # Date or flexible
+    if "flexible" in text.lower():
+        out["trip_start_day"] = "flexible"
+    else:
+        date = _extract_date_iso(text)
+        if date:
+            out["trip_start_day"] = date
+    # Days
+    nd = _fallback_extract_num_days(text)
+    if nd:
+        out["num_days"] = nd
+    # Trip type
+    tt = _fallback_extract_trip_type(text)
+    if tt:
+        out["trip_type"] = tt
+    # Budget
+    bg = _fallback_extract_budget(text)
+    if bg:
+        out["budget"] = bg
+    # Location
+    loc = _fallback_extract_location(text)
+    if loc:
+        out["location"] = loc
+    return out
+
+
 def preference_node(state, llm):
     summary = state.get("summary", "")
     query = state.get("query", "")
     current_prefs = state.get("preferences", {})
 
     prompt = f"""
-You are a preference extraction assistant for a trip planning chatbot.
+You are a precise preference extraction assistant for a trip planning chatbot.
 
-Your task is to extract structured travel preferences from the conversation.
+Goal: Extract only the NEW or CHANGED trip details from the user's CURRENT message, mapped to this fixed schema:
+- location: Destination city/region/country (string) — null if not mentioned
+- trip_type: One or more labels from the allowed list (array of strings) — null if not mentioned
+- num_days: Whole number of trip days (integer) — null if not mentioned
+- trip_start_day: Trip start date in YYYY-MM-DD (string) — if the user explicitly says "flexible", set this to "flexible"; otherwise null if not mentioned
+- budget: Budget including currency symbol/code (string, e.g., "$1200", "€800", "INR 50,000") — null if not mentioned
 
-Current preferences already collected:
+Allowed trip_type values (use these labels exactly if applicable):
+["Adventure","Leisure","Business","Wellness","Cultural","Romantic","Family","Solo",
+ "Friends/Group","Luxury","Budget/Backpacking","Eco/Nature","Spiritual/Pilgrimage","Food & Wine","Festival/Event"]
+
+Important rules:
+- Consider BOTH the conversation summary and the CURRENT user message, but only emit fields that are explicitly present or updated in the CURRENT message.
+- If the CURRENT message does not mention a field, set it to null (even if it appears in the summary).
+- Normalize values when obvious: extract the number for num_days; convert dates like MM/DD/YYYY or "June 5, 2026" to YYYY-MM-DD; keep budget text with currency.
+- If trip_type is a single value, you may return ["Leisure"] style array with one item.
+- Return a VALID JSON object ONLY. No extra text or markdown.
+
+Current preferences already collected (for your context; do NOT repeat unchanged values unless updated by the CURRENT message):
 {json.dumps(current_prefs, indent=2)}
-
-Required fields:
-- location: The destination or city/country the user wants to visit (null if not mentioned).
-- trip_type: Choose one or more from this list if mentioned, otherwise null:
-  ["Adventure","Leisure","Business","Wellness","Cultural","Romantic","Family","Solo",
-   "Friends/Group","Luxury","Budget/Backpacking","Eco/Nature","Spiritual/Pilgrimage",
-   "Food & Wine","Festival/Event"]
-- num_days: Number of days for the trip (integer, null if not specified).
-- trip_start_day: Start date of the trip (YYYY-MM-DD format, null if not specified).
-- budget: Budget amount with currency (e.g., "$1000", "€500", null if not specified).
-
-Rules:
-- Use both the conversation summary and the current user message.
-- Only extract NEW or UPDATED information from the current message.
-- If the user updates a detail, return the new value to overwrite the previous one.
-- If a field is not mentioned in the current message, return null for that field.
-- Return a valid JSON object only.
 
 Conversation summary:
 {summary}
@@ -138,13 +282,10 @@ Conversation summary:
 Current user message:
 {query}
 
-Output format requirements:
-- Return ONLY a JSON object, no markdown, no comments, no surrounding text.
-- The object MUST have exactly these keys: location, trip_type, num_days, trip_start_day, budget.
-- Use null for any field not mentioned in the CURRENT message.
- - Example: {{"location": "Paris", "trip_type": ["Cultural"], "num_days": 5, "trip_start_day": "2025-06-01", "budget": "$1500"}}
-
-Now return the JSON object with exactly those five keys:
+Output requirements (strict):
+- Return ONLY a JSON object with EXACTLY these keys: location, trip_type, num_days, trip_start_day, budget
+- Use null for any key not present in the CURRENT message
+- Example: {{"location": "Paris", "trip_type": ["Cultural"], "num_days": 5, "trip_start_day": "2025-06-01", "budget": "$1500"}}
 """
 
     res = llm.invoke(prompt)
@@ -158,20 +299,37 @@ Now return the JSON object with exactly those five keys:
     prefs = state.get("preferences") or {}
     if not isinstance(prefs, dict):
         prefs = {}
+
+    # If user explicitly said the date is flexible in the CURRENT message, record that
+    if not new_prefs.get("trip_start_day") and isinstance(query, str) and "flexible" in query.lower():
+        new_prefs["trip_start_day"] = "flexible"
+
+    # Heuristic fallback when LLM didn't return parseable JSON
+    if not new_prefs or all(new_prefs.get(k) in (None, []) for k in ["location","trip_type","num_days","trip_start_day","budget"]):
+        heur = _fallback_extract_from_text(query or "")
+        for k, v in heur.items():
+            if v not in (None, []):
+                new_prefs[k] = v
     for key, value in (new_prefs or {}).items():
         if value is not None:
             prefs[key] = value
 
-    # Fallback: if trip_start_day missing in LLM output, try to parse it from the CURRENT user query
-    if not prefs.get("trip_start_day"):
+    # Fallback: if trip_start_day missing in LLM output and not marked flexible, try to parse it from the CURRENT user query
+    if not prefs.get("trip_start_day") or prefs.get("trip_start_day") in (None, ""):
         date_from_query = _extract_date_iso(query)
         if date_from_query:
             prefs["trip_start_day"] = date_from_query
 
     state["preferences"] = prefs
     
-    # Check for missing required fields
-    required_fields = ["location", "num_days", "trip_start_day"]
+    # Check for missing fields in canonical order (ask one-by-one later)
+    required_fields = [
+        "location",
+        "trip_type",
+        "num_days",
+        "trip_start_day",
+        "budget",
+    ]
     missing = []
     for field in required_fields:
         if not prefs.get(field):

@@ -14,11 +14,19 @@ def itinerary_node(state, llm):
     budget = preferences.get("budget")
     trip_start_day = preferences.get("trip_start_day")
 
-    # Check if we have minimum required information
-    if not location or not num_days:
+    # Require all key details before generating the itinerary
+    required_map = {
+        "destination": bool(location),
+        "trip type": bool(trip_type),
+        "number of days": bool(num_days),
+        "start date": bool(trip_start_day),  # 'flexible' is acceptable
+        "budget": bool(budget),
+    }
+    missing_labels = [k for k, ok in required_map.items() if not ok]
+    if missing_labels:
         state["answer"] = (
-            "I need a bit more information to create your itinerary. "
-            "Could you please provide the destination and number of days for your trip?"
+            "I’m almost ready to generate your itinerary. "
+            f"I still need: {', '.join(missing_labels)}."
         )
         return state
 
@@ -35,8 +43,9 @@ def itinerary_node(state, llm):
         # trip_type can be list from preference extraction; pick first if list
         if isinstance(trip_type, list) and trip_type:
             trip_type = trip_type[0]
-        if not isinstance(trip_type, str) or not trip_type:
-            trip_type = "Leisure"
+        # Ensure we have a string
+        if not isinstance(trip_type, str):
+            trip_type = str(trip_type or "Leisure")
 
         # budget may be like "$1500" or "€500" or number; extract digits
         budget_value = None
@@ -70,7 +79,7 @@ def itinerary_node(state, llm):
         # Compose a concise answer for chat
         trip_days = resp.get("trip_plan") or []
         stay_plan = resp.get("stay_plan") or []
-        intro = f"I’ve prepared a {num_days}-day plan for {location}."
+        intro = f"I’ve prepared a {num_days}-day {trip_type.lower()} plan for {location}."
         day1_preview = ""
         if trip_days:
             first_day = trip_days[0]
