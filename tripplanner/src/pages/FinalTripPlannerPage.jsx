@@ -47,7 +47,17 @@ const FinalTripPlannerPage = () => {
   const [cards, setCards] = useState([]);
   const [mapMarkers, setMapMarkers] = useState([]);
   const location = useLocation();
-  const { addMessage, conversationId, setConversationId, itineraryData, isItineraryDone, updateItineraryData } = useContext(ChatContext);
+  const {
+    addMessage,
+    conversationId,
+    setConversationId,
+    itineraryData,
+    isItineraryDone,
+    updateItineraryData,
+    startAssistantTyping,
+    stopAssistantTyping,
+    setLastAssistantMessage,
+  } = useContext(ChatContext);
 
   // Maintain agent state across turns for follow-up Q&A
   const [agentState, setAgentState] = useState({});
@@ -111,18 +121,26 @@ const FinalTripPlannerPage = () => {
 
   // Shared function to process a free-form user text via chatbot
   const processUserText = async (text) => {
+    const convId = conversationId || ensureConversationId();
+    if (convId && convId !== conversationId) {
+      setConversationId(convId);
+    }
+    startAssistantTyping();
+    let firstAssistantChunk = true;
     try {
-      const convId = conversationId || ensureConversationId();
-      if (convId && convId !== conversationId) {
-        setConversationId(convId);
-      }
       const { streamUrl } = await postChatMessage({ content: text, conversationId: convId });
       await streamChat({
         streamUrl,
         onEvent: (evt) => {
           if (evt.event === 'message' && evt.role === 'assistant') {
             const content = evt.content || '';
-            if (content) addMessage({ text: content, sender: 'assistant' });
+            if (!content) return;
+            if (firstAssistantChunk) {
+              addMessage({ text: content, sender: 'assistant' });
+              firstAssistantChunk = false;
+            } else {
+              setLastAssistantMessage(content);
+            }
           }
           if (evt.event === 'done') {
             // Check for itinerary data after the stream is done
@@ -131,7 +149,14 @@ const FinalTripPlannerPage = () => {
         },
       });
     } catch (e) {
-      addMessage({ text: e.message || 'Sorry, something went wrong.', sender: 'assistant' });
+      const fallback = e.message || 'Sorry, something went wrong.';
+      if (firstAssistantChunk) {
+        addMessage({ text: fallback, sender: 'assistant' });
+      } else {
+        setLastAssistantMessage(fallback);
+      }
+    } finally {
+      stopAssistantTyping();
     }
   };
 

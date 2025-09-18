@@ -17,6 +17,7 @@ export const ChatProvider = ({ children }) => {
   const [conversationId, setConversationIdState] = useState(() => getConversationIdFromCookie());
   const [itineraryData, setItineraryData] = useState(null);
   const [isItineraryDone, setIsItineraryDone] = useState(false);
+  const [typingSessions, setTypingSessions] = useState(0);
 
   const addMessage = (message) => {
     setMessages((prevMessages) => {
@@ -30,9 +31,29 @@ export const ChatProvider = ({ children }) => {
 
   const updateLastMessage = (text) => {
     setMessages((prevMessages) => {
+      if (!prevMessages.length) return prevMessages;
       const newMessages = [...prevMessages];
-      newMessages[newMessages.length - 1].text += text;
+      newMessages[newMessages.length - 1] = {
+        ...newMessages[newMessages.length - 1],
+        text: (newMessages[newMessages.length - 1].text || '') + text,
+      };
       return newMessages;
+    });
+  };
+
+  const setLastAssistantMessage = (text) => {
+    setMessages((prevMessages) => {
+      if (!prevMessages.length) {
+        return [{ sender: 'assistant', text }];
+      }
+      const newMessages = [...prevMessages];
+      for (let i = newMessages.length - 1; i >= 0; i -= 1) {
+        if (newMessages[i].sender === 'assistant') {
+          newMessages[i] = { ...newMessages[i], text };
+          return newMessages;
+        }
+      }
+      return [...newMessages, { sender: 'assistant', text }];
     });
   };
 
@@ -50,6 +71,14 @@ export const ChatProvider = ({ children }) => {
     setIsItineraryDone(isDone);
   };
 
+  const startAssistantTyping = () => {
+    setTypingSessions((count) => count + 1);
+  };
+
+  const stopAssistantTyping = () => {
+    setTypingSessions((count) => Math.max(0, count - 1));
+  };
+
   return (
     <ChatContext.Provider value={{ 
       messages, 
@@ -59,7 +88,11 @@ export const ChatProvider = ({ children }) => {
       setConversationId,
       itineraryData,
       isItineraryDone,
-      updateItineraryData
+      updateItineraryData,
+      isAssistantTyping: typingSessions > 0,
+      startAssistantTyping,
+      stopAssistantTyping,
+      setLastAssistantMessage
     }}>
       {children}
     </ChatContext.Provider>
