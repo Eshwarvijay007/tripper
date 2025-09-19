@@ -1,6 +1,4 @@
-# TripPlanner.ai React Clone
-
-A modern React version of the TripPlanner.ai website clone, built with Vite, React 18, and Tailwind CSS.
+# Naomi.ai
 
 ## 🚀 Features
 
@@ -11,16 +9,16 @@ A modern React version of the TripPlanner.ai website clone, built with Vite, Rea
 - **Tailwind CSS**: Utility-first CSS framework for rapid styling
 - **Framer Motion**: Smooth animations and transitions (ready to implement)
 
-### TripPlanner.ai Clone Features
-- **Exact Visual Recreation**: Pixel-perfect clone of the original TripPlanner.ai website
+### Naomi.ai Features
+- **Exact Visual Recreation**: Pixel-perfect clone of the original Naomi.ai website
 - **Responsive Design**: Fully responsive layout that works on all devices
 - **Modern Animations**: Smooth scroll animations, hover effects, and lazy loading
 - **Performance Optimized**: Fast loading with React optimization techniques
 - **Accessibility**: Built with accessibility best practices in mind
 - **Interactive Elements**: Functional carousel, smooth scrolling, and hover effects
 
-### Layla.ai Chat Interface
-- **Complete Chat Interface**: Full recreation of Layla's conversational AI interface
+### Naomi.ai Chat Interface
+- **Complete Chat Interface**: Full recreation of Naomi's conversational AI interface
 - **Interactive Trip Planning**: Simulated AI responses and trip generation
 - **Real-time Chat**: Dynamic message handling with typing indicators
 - **Voice Input Support**: Ready for Web Speech API integration
@@ -37,34 +35,6 @@ A modern React version of the TripPlanner.ai website clone, built with Vite, Rea
 - **Framer Motion**: Production-ready motion library for React
 - **PostCSS & Autoprefixer**: CSS processing and vendor prefixing
 
-## 📁 Project Structure
-
-```
-tripplanner-react/
-├── public/
-│   └── favicon.ico
-├── src/
-│   ├── components/
-│   │   ├── Header.jsx              # Navigation header
-│   │   ├── HeroSection.jsx         # Main hero section
-│   │   ├── FeaturesSection.jsx     # Features showcase
-│   │   ├── PartnerCarousel.jsx     # Partner logos carousel
-│   │   ├── TripTypesSection.jsx    # Trip types grid
-│   │   ├── AIItinerarySection.jsx  # AI planning section
-│   │   └── MobileCreateButton.jsx  # Mobile floating button
-│   ├── pages/
-│   │   ├── HomePage.jsx            # Main landing page
-│   │   ├── LaylaPage.jsx           # AI chat interface
-│   │   └── ChatPage.jsx            # Additional chat page
-│   ├── App.jsx                     # Main app component
-│   ├── main.jsx                    # React entry point
-│   └── index.css                   # Global styles with Tailwind
-├── index.html                      # HTML template
-├── package.json                    # Dependencies and scripts
-├── vite.config.js                  # Vite configuration
-├── tailwind.config.js              # Tailwind configuration
-└── postcss.config.js               # PostCSS configuration
-```
 
 ## 🚀 Getting Started
 
@@ -111,7 +81,7 @@ npm run preview
 - Responsive design
 - Interactive elements
 
-### LaylaPage
+### NaomiPage
 - Full AI chat interface
 - Message handling
 - Typing indicators
@@ -200,7 +170,7 @@ This project demonstrates modern React development practices including:
 
 ## 📄 License
 
-This project is for educational and demonstration purposes only. All design rights belong to the original TripPlanner.ai team.
+This project is for educational and demonstration purposes only. All design rights belong to the original Naomi.ai team.
 
 ## Backend Integration (FastAPI)
 
@@ -210,7 +180,7 @@ This project is for educational and demonstration purposes only. All design righ
   uvicorn app.main:app --reload
   ```
 - Health: `GET http://localhost:8000/api/healthz`
-- The Layla prompt section calls:
+- The Naomi prompt section calls:
   - `POST {VITE_API_BASE}/api/chat/messages`
   - Streams NDJSON from `GET {VITE_API_BASE}/api/chat/stream/{conversation_id}`
 - With the current stub backend, you will see streaming placeholder tokens in the chat UI.

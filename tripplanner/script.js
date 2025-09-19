@@ -273,12 +273,12 @@ function trackEvent(eventName, properties = {}) {
 
 // Track button clicks
 document.addEventListener('click', (e) => {
-    if (e.target.matches('a[href*="layla.ai"], button')) {
-        const elementText = e.target.textContent.trim();
-        trackEvent('button_click', {
-            button_text: elementText,
-            button_location: e.target.closest('section')?.id || 'unknown'
-        });
+    if (e.target.matches('a[href*="naomi.ai"], button')) {
+      const elementText = e.target.textContent.trim();
+      trackEvent("button_click", {
+        button_text: elementText,
+        button_location: e.target.closest("section")?.id || "unknown",
+      });
     }
 });
 
@@ -376,13 +376,16 @@ if (!window.IntersectionObserver) {
 }
 
 // Console welcome message
-console.log('%c🚀 TripPlanner.ai Clone', 'color: #10b981; font-size: 20px; font-weight: bold;');
+console.log(
+  "%c🚀 Naomi.ai",
+  "color: #10b981; font-size: 20px; font-weight: bold;"
+);
 console.log('%cBuilt with modern web technologies', 'color: #6b7280; font-size: 14px;');
 
 // Export functions for potential external use
-window.TripPlannerClone = {
-    trackEvent,
-    initLazyLoading,
-    initScrollAnimations,
-    initPartnerCarousel
+window.NaomiClone = {
+  trackEvent,
+  initLazyLoading,
+  initScrollAnimations,
+  initPartnerCarousel,
 };

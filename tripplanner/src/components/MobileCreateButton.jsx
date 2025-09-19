@@ -16,18 +16,20 @@ const MobileCreateButton = () => {
   }, [])
 
   return (
-    <div className={`fixed bottom-4 left-0 right-0 z-[90] flex justify-center md:hidden mobile-create-btn ${
-      isVisible ? 'visible' : ''
-    }`}>
-      <Link 
-        to="/layla"
+    <div
+      className={`fixed bottom-4 left-0 right-0 z-[90] flex justify-center md:hidden mobile-create-btn ${
+        isVisible ? "visible" : ""
+      }`}
+    >
+      <Link
+        to="/naomi"
         className="flex w-fit items-center gap-2 rounded-full bg-accent-green px-3 py-2 text-white shadow-md btn-hover"
       >
         <MapPin className="mb-1 text-xl" size={20} />
         Create a new trip
       </Link>
     </div>
-  )
+  );
 }
 
 export default MobileCreateButton

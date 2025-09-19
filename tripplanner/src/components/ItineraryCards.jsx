@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from "react";
 
 // MapPin icon component
 const MapPin = ({ className }) => (
@@ -20,11 +20,48 @@ const formatINR = (amount) => {
 const ItineraryCards = ({ tripPlan, onLocationClick }) => {
   const [showAllHotels, setShowAllHotels] = useState(false);
   
+  const [selectedDayIndex, setSelectedDayIndex] = useState(0);
+  const scrollContainerRef = useRef(null);
+  const [showLeftArrow, setShowLeftArrow] = useState(false);
+  const [showRightArrow, setShowRightArrow] = useState(false);
+
+  // Check scroll position and update arrow visibility
+  const checkScrollButtons = () => {
+    if (scrollContainerRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } =
+        scrollContainerRef.current;
+      setShowLeftArrow(scrollLeft > 0);
+      setShowRightArrow(scrollLeft < scrollWidth - clientWidth - 1);
+    }
+  };
+
+  // Scroll left/right functions
+  const scrollLeft = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollBy({ left: -200, behavior: "smooth" });
+    }
+  };
+
+  const scrollRight = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollBy({ left: 200, behavior: "smooth" });
+    }
+  };
+
+  // Initialize scroll buttons on mount and when days change
+  React.useEffect(() => {
+    checkScrollButtons();
+    const handleResize = () => checkScrollButtons();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [tripPlan]);
+
   if (!tripPlan || !tripPlan.trip_plan) {
     return null;
   }
 
   const { trip_plan: days, stay_plan: hotels } = tripPlan;
+  const selectedDay = days[selectedDayIndex];
   
   // Generate realistic pricing for hotels and sort by price
   const generateRealisticPricing = (hotel, index) => {
@@ -99,44 +136,136 @@ const ItineraryCards = ({ tripPlan, onLocationClick }) => {
 
   return (
     <div className="space-y-6">
-      {/* Day-by-day itinerary cards */}
-      {days.map((day, index) => (
-        <div key={day.day || index} className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
-          {/* Day header */}
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4 border-b border-gray-100">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-semibold text-sm">
-                {day.day}
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900">Day {day.day}</h3>
-            </div>
-          </div>
+      {/* Horizontal scrollable day tabs */}
+      <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+        {/* Day tabs header */}
+        <div className="border-b border-gray-100 relative">
+          {/* Left scroll arrow */}
+          {showLeftArrow && (
+            <button
+              onClick={scrollLeft}
+              className="absolute left-2 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-white shadow-md rounded-full flex items-center justify-center hover:bg-gray-50 transition-colors"
+            >
+              <svg
+                className="w-4 h-4 text-gray-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 19l-7-7 7-7"
+                />
+              </svg>
+            </button>
+          )}
 
-          {/* Locations */}
+          {/* Right scroll arrow */}
+          {showRightArrow && (
+            <button
+              onClick={scrollRight}
+              className="absolute right-2 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-white shadow-md rounded-full flex items-center justify-center hover:bg-gray-50 transition-colors"
+            >
+              <svg
+                className="w-4 h-4 text-gray-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 5l7 7-7 7"
+                />
+              </svg>
+            </button>
+          )}
+
+          <div
+            ref={scrollContainerRef}
+            className="flex overflow-x-auto scrollbar-hide"
+            onScroll={checkScrollButtons}
+            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+          >
+            {days.map((day, index) => (
+              <button
+                key={day.day || index}
+                onClick={() => setSelectedDayIndex(index)}
+                className={`flex-shrink-0 px-4 py-3 border-b-2 transition-all duration-200 ${
+                  selectedDayIndex === index
+                    ? "border-black"
+                    : "border-transparent hover:bg-gray-50"
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <div
+                    className={`w-6 h-6 rounded-full flex items-center justify-center font-medium text-xs transition-colors ${
+                      selectedDayIndex === index
+                        ? "bg-black text-white"
+                        : "bg-gray-200 text-gray-700"
+                    }`}
+                  >
+                    {day.day}
+                  </div>
+                  <span
+                    className={`font-medium whitespace-nowrap text-sm ${
+                      selectedDayIndex === index
+                        ? "text-gray-900"
+                        : "text-gray-600"
+                    }`}
+                  >
+                    Day {day.day}
+                  </span>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Selected day content */}
+        {selectedDay && (
           <div className="p-6">
             <div className="space-y-4">
-              {day.locations?.map((location, locIndex) => (
-                <div 
-                  key={locIndex} 
-                  className="flex gap-4 p-4 rounded-xl bg-gray-50 hover:bg-gray-100 transition-all duration-200 cursor-pointer hover:shadow-sm"
+              {selectedDay.locations?.map((location, locIndex) => (
+                <div
+                  key={locIndex}
+                  className="flex gap-4 p-4 rounded-xl transition-all duration-200 cursor-pointer location-card hover:shadow-sm"
                   onClick={() => onLocationClick && onLocationClick(location)}
                 >
                   {/* Location image */}
                   <div className="flex-shrink-0">
                     {location.photo_url ? (
-                      <img 
-                        src={location.photo_url} 
+                      <img
+                        src={location.photo_url}
                         alt={location.name}
                         className="w-20 h-20 rounded-lg object-cover"
                         onError={(e) => {
-                          e.target.style.display = 'none';
+                          e.target.style.display = "none";
                         }}
                       />
                     ) : (
                       <div className="w-20 h-20 rounded-lg bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
-                        <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <svg
+                          className="w-8 h-8 text-gray-400"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                          />
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                          />
                         </svg>
                       </div>
                     )}
@@ -145,30 +274,52 @@ const ItineraryCards = ({ tripPlan, onLocationClick }) => {
                   {/* Location details */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between">
-                      <h4 className="font-semibold text-gray-900 text-sm leading-tight">{location.name}</h4>
+                      <h4 className="font-semibold text-gray-900 text-sm leading-tight">
+                        {location.name}
+                      </h4>
                       {location.rating && (
                         <div className="flex items-center gap-1 ml-2 flex-shrink-0">
-                          <svg className="w-4 h-4 text-yellow-400 fill-current" viewBox="0 0 20 20">
+                          <svg
+                            className="w-4 h-4 text-yellow-400 fill-current"
+                            viewBox="0 0 20 20"
+                          >
                             <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                           </svg>
-                          <span className="text-sm font-medium text-gray-700">{location.rating}</span>
+                          <span className="text-sm font-medium text-gray-700">
+                            {location.rating}
+                          </span>
                         </div>
                       )}
                     </div>
-                    
+
                     {location.description && (
-                      <p className="text-sm text-gray-600 mt-1 overflow-hidden" style={{
-                        display: '-webkit-box',
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical'
-                      }}>{location.description}</p>
+                      <p
+                        className="text-sm text-gray-600 mt-1 overflow-hidden"
+                        style={{
+                          display: "-webkit-box",
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: "vertical",
+                        }}
+                      >
+                        {location.description}
+                      </p>
                     )}
-                    
+
                     <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
                       {location.estimated_visit_duration && (
                         <span className="flex items-center gap-1">
-                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          <svg
+                            className="w-3 h-3"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                            />
                           </svg>
                           {location.estimated_visit_duration}
                         </span>
@@ -211,8 +362,8 @@ const ItineraryCards = ({ tripPlan, onLocationClick }) => {
               ))}
             </div>
           </div>
-        </div>
-      ))}
+        )}
+      </div>
 
       {/* Hotels section */}
       {hotels && hotels.length > 0 && (
@@ -220,11 +371,23 @@ const ItineraryCards = ({ tripPlan, onLocationClick }) => {
           <div className="bg-gradient-to-r from-green-50 to-emerald-50 px-6 py-4 border-b border-gray-100">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 bg-green-600 text-white rounded-full flex items-center justify-center">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                  />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900">Recommended Stays</h3>
+              <h3 className="text-lg font-semibold text-gray-900">
+                Recommended Stays
+              </h3>
             </div>
           </div>
 
@@ -253,18 +416,28 @@ const ItineraryCards = ({ tripPlan, onLocationClick }) => {
                   {/* Hotel image */}
                   <div className="flex-shrink-0">
                     {hotel.photos && hotel.photos[0] ? (
-                      <img 
-                        src={hotel.photos[0]} 
+                      <img
+                        src={hotel.photos[0]}
                         alt={hotel.name}
                         className="w-24 h-20 rounded-lg object-cover"
                         onError={(e) => {
-                          e.target.style.display = 'none';
+                          e.target.style.display = "none";
                         }}
                       />
                     ) : (
                       <div className="w-24 h-20 rounded-lg bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
-                        <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                        <svg
+                          className="w-6 h-6 text-gray-400"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                          />
                         </svg>
                       </div>
                     )}
@@ -273,25 +446,37 @@ const ItineraryCards = ({ tripPlan, onLocationClick }) => {
                   {/* Hotel details */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between">
-                      <h4 className="font-semibold text-gray-900 text-sm leading-tight">{hotel.name}</h4>
+                      <h4 className="font-semibold text-gray-900 text-sm leading-tight">
+                        {hotel.name}
+                      </h4>
                       {hotel.rating && (
                         <div className="flex items-center gap-1 ml-2 flex-shrink-0">
-                          <svg className="w-4 h-4 text-yellow-400 fill-current" viewBox="0 0 20 20">
+                          <svg
+                            className="w-4 h-4 text-yellow-400 fill-current"
+                            viewBox="0 0 20 20"
+                          >
                             <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                           </svg>
-                          <span className="text-sm font-medium text-gray-700">{hotel.rating}</span>
+                          <span className="text-sm font-medium text-gray-700">
+                            {hotel.rating}
+                          </span>
                         </div>
                       )}
                     </div>
-                    
+
                     {hotel.description && (
-                      <p className="text-sm text-gray-600 mt-1 overflow-hidden" style={{
-                        display: '-webkit-box',
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical'
-                      }}>{hotel.description}</p>
+                      <p
+                        className="text-sm text-gray-600 mt-1 overflow-hidden"
+                        style={{
+                          display: "-webkit-box",
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: "vertical",
+                        }}
+                      >
+                        {hotel.description}
+                      </p>
                     )}
-                    
+
                     <div className="flex items-center justify-between mt-2">
                       <div className="flex items-center gap-2">
                         {/* Hotel Category Tag */}
