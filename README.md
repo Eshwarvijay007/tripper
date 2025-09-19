@@ -52,5 +52,6 @@ Just chat with Naomi, tell her your travel style, interests, and budget, and she
 
 <p align="center">
   <em>Let's make your travel dreams a reality!</em>
+  <em>Built with ❤️ by the naomi.ai team</em>em>
 </p>
 </p>
