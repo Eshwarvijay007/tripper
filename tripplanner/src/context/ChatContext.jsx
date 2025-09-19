@@ -1,4 +1,4 @@
-import React, { createContext, useState } from 'react';
+import React, { createContext, useState, useRef } from 'react';
 import {
   clearConversationIdCookie,
   getConversationIdFromCookie,
@@ -11,21 +11,29 @@ export const ChatProvider = ({ children }) => {
   const [messages, setMessages] = useState(() => [
     {
       sender: 'assistant',
-      text: 'Hi! Tell me about your trip. Where are you headed and when? I can plan your days and suggest stays.'
+      text: 'Hi! Tell me about your trip. Where are you headed and when? I can plan your days and suggest stays.',
+      isInitial: true
     }
   ]);
+  const initialProcessedRef = useRef(false);
   const [conversationId, setConversationIdState] = useState(() => getConversationIdFromCookie());
   const [itineraryData, setItineraryData] = useState(null);
   const [isItineraryDone, setIsItineraryDone] = useState(false);
   const [typingSessions, setTypingSessions] = useState(0);
 
-  const addMessage = (message) => {
+  const addMessage = (message, replaceInitial = false) => {
     setMessages((prevMessages) => {
       const last = prevMessages[prevMessages.length - 1];
       if (last && last.text === message.text && last.sender === message.sender) {
         return prevMessages; // prevent accidental duplicates
       }
-      return [...prevMessages, message];
+      
+      // Handle initial message replacement
+      if (replaceInitial && prevMessages.length === 1 && prevMessages[0].isInitial) {
+        return [{ ...message, isInitial: false }];
+      }
+      
+      return [...prevMessages, { ...message, isInitial: false }];
     });
   };
 
@@ -44,16 +52,16 @@ export const ChatProvider = ({ children }) => {
   const setLastAssistantMessage = (text) => {
     setMessages((prevMessages) => {
       if (!prevMessages.length) {
-        return [{ sender: 'assistant', text }];
+        return [{ sender: 'assistant', text, isInitial: false }];
       }
       const newMessages = [...prevMessages];
       for (let i = newMessages.length - 1; i >= 0; i -= 1) {
         if (newMessages[i].sender === 'assistant') {
-          newMessages[i] = { ...newMessages[i], text };
+          newMessages[i] = { ...newMessages[i], text, isInitial: false };
           return newMessages;
         }
       }
-      return [...newMessages, { sender: 'assistant', text }];
+      return [...newMessages, { sender: 'assistant', text, isInitial: false }];
     });
   };
 
@@ -92,7 +100,8 @@ export const ChatProvider = ({ children }) => {
       isAssistantTyping: typingSessions > 0,
       startAssistantTyping,
       stopAssistantTyping,
-      setLastAssistantMessage
+      setLastAssistantMessage,
+      initialProcessedRef
     }}>
       {children}
     </ChatContext.Provider>

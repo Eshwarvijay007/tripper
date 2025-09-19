@@ -7,7 +7,7 @@ import { ensureConversationId } from '../lib/conversation';
 
 const LaylaPromptSection = () => {
   const [inputValue, setInputValue] = useState('');
-  const { addMessage, conversationId, setConversationId } = useContext(ChatContext);
+  const { addMessage, conversationId, setConversationId, initialProcessedRef } = useContext(ChatContext);
   const [isTyping, setIsTyping] = useState(false);
   const navigate = useNavigate();
   const [chatDisabled, setChatDisabled] = useState(false);
@@ -15,6 +15,12 @@ const LaylaPromptSection = () => {
   const handleSendMessage = async (message) => {
     const text = message || inputValue;
     if (text.trim() === '') return;
+    
+    // Mark that we're processing the first user message
+    if (!initialProcessedRef.current) {
+      initialProcessedRef.current = true;
+    }
+    
     addMessage({ text, sender: 'user' });
     setInputValue('');
     setChatDisabled(true);

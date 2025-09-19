@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState, useContext } from 'react';
+import React, { useEffect, useMemo, useState, useContext, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import TripPageHeader from '../components/TripPageHeader';
 // Removed static title and itinerary in favor of dynamic cards
@@ -57,11 +57,20 @@ const FinalTripPlannerPage = () => {
     startAssistantTyping,
     stopAssistantTyping,
     setLastAssistantMessage,
+    initialProcessedRef,
   } = useContext(ChatContext);
 
   // Maintain agent state across turns for follow-up Q&A
   const [agentState, setAgentState] = useState({});
   const [pendingQuestions, setPendingQuestions] = useState([]);
+  
+  // Prevent duplicate initial query processing in StrictMode
+  const initialQueryProcessedRef = useRef(false);
+  
+  // Track retry attempts for empty trip plans
+  const retryAttempts = useRef(0);
+  const maxRetries = 3;
+  const lastQueryRef = useRef(null);
 
   const defaultDates = useMemo(() => {
     const start = new Date();
@@ -86,47 +95,157 @@ const FinalTripPlannerPage = () => {
     await processUserText(`Suggest great destinations and places to visit around ${query}.`);
   };
 
-  // Function to check for itinerary data
-  const checkForItineraryData = async (convId) => {
+  // Function to generate retry queries with different approaches
+  const generateRetryQuery = (originalQuery, attemptNumber) => {
+    // Extract destination from query for more intelligent retry strategies
+    const extractDestination = (query) => {
+      const lowerQuery = query.toLowerCase();
+      // Look for patterns like "trip to X", "visit X", "travel to X"
+      const patterns = [
+        /(?:trip|travel|visit|go)\s+to\s+([^,\.]+)/,
+        /(?:in|to|at)\s+([a-zA-Z\s]+)(?:\s+for|\s+in|$)/,
+        /plan.*?(?:for|to)\s+([a-zA-Z\s]+)/,
+      ];
+      
+      for (const pattern of patterns) {
+        const match = lowerQuery.match(pattern);
+        if (match && match[1]) {
+          return match[1].trim();
+        }
+      }
+      
+      // Fallback: use the query as is
+      return query;
+    };
+    
+    const destination = extractDestination(originalQuery);
+    
+    const retryStrategies = [
+      // Strategy 1: More specific with attractions focus
+      `Plan a detailed ${originalQuery.includes('day') ? originalQuery : '3-day trip to ' + destination}. Include specific tourist attractions, landmarks, museums, restaurants, and local experiences with exact locations, opening hours, and estimated visit times.`,
+      
+      // Strategy 2: Popular places approach
+      `What are the most popular places to visit in ${destination}? Create a complete itinerary with famous attractions, local restaurants, cultural sites, shopping areas, and entertainment options. Include specific addresses and timing for each location.`,
+      
+      // Strategy 3: Local experience focused
+      `I want to explore ${destination} like a local. Suggest an itinerary with authentic experiences, local markets, popular neighborhoods, must-try restaurants, hidden gems, and cultural activities. Provide specific location details and optimal visiting times.`
+    ];
+    
+    return retryStrategies[attemptNumber - 1] || originalQuery;
+  };
+
+  // Function to check for itinerary data with retry mechanism
+  const checkForItineraryData = async (convId, shouldRetryOnEmpty = true) => {
     try {
       const stateData = await getConversationState(convId);
       const state = stateData.state || {};
       
-      if (state.itinerary_done && state.trip_plan) {
+      // Check if we have a valid trip plan
+      const hasTripPlan = state.itinerary_done && 
+                         state.trip_plan && 
+                         state.trip_plan.trip_plan && 
+                         Array.isArray(state.trip_plan.trip_plan) && 
+                         state.trip_plan.trip_plan.length > 0;
+      
+      if (hasTripPlan) {
+        // Reset retry counter on success
+        retryAttempts.current = 0;
         updateItineraryData(state.trip_plan, true);
         
         // Update map markers with all locations from the trip plan
         const allLocations = [];
-        if (state.trip_plan.trip_plan) {
-          state.trip_plan.trip_plan.forEach(day => {
-            if (day.locations) {
-              day.locations.forEach(location => {
-                if (location.lat && location.lng) {
-                  allLocations.push({
-                    lat: location.lat,
-                    lon: location.lng,
-                    title: location.name
-                  });
-                }
-              });
-            }
-          });
-        }
+        state.trip_plan.trip_plan.forEach(day => {
+          if (day.locations) {
+            day.locations.forEach(location => {
+              if (location.lat && location.lng) {
+                allLocations.push({
+                  lat: location.lat,
+                  lon: location.lng,
+                  title: location.name
+                });
+              }
+            });
+          }
+        });
         setMapMarkers(allLocations);
+      } 
+      // If itinerary is marked done but trip_plan is empty/invalid, try retry
+      else if (state.itinerary_done && 
+               (!state.trip_plan || !state.trip_plan.trip_plan || state.trip_plan.trip_plan.length === 0) &&
+               shouldRetryOnEmpty && 
+               retryAttempts.current < maxRetries && 
+               lastQueryRef.current) {
+        
+        retryAttempts.current += 1;
+        console.log(`Trip plan is empty, attempting retry ${retryAttempts.current}/${maxRetries}`);
+        
+        // Silent retry - no user messages needed
+        
+        // Generate a retry query with different parameters
+        const retryQuery = generateRetryQuery(lastQueryRef.current, retryAttempts.current);
+        
+        // Progressive delay: longer delays for subsequent retries
+        const delays = [1500, 2500, 3500];
+        const delay = delays[retryAttempts.current - 1] || 1500;
+        
+        setTimeout(() => {
+          processUserText(retryQuery, true); // Mark as retry
+        }, delay);
+      }
+      // If we've exhausted retries, show a helpful message
+      else if (state.itinerary_done && 
+               (!state.trip_plan || !state.trip_plan.trip_plan || state.trip_plan.trip_plan.length === 0) &&
+               retryAttempts.current >= maxRetries) {
+        
+        // Extract destination for personalized suggestions
+        const destination = lastQueryRef.current ? 
+          lastQueryRef.current.replace(/.*(?:to|in|for|visit)\s+([^,\.]+).*/i, '$1').trim() :
+          'your destination';
+        
+        addMessage({ 
+          text: `I'm working on getting you the perfect itinerary for ${destination}. While I gather more details, you can ask me specific questions like:\n\n• "What are the best restaurants in ${destination}?"\n• "Show me top attractions in ${destination}"\n• "Find hotels in ${destination}"\n• "What's the weather like in ${destination}?"\n\nI'm here to help with any travel planning questions you have!`, 
+          sender: 'assistant' 
+        });
+        
+        // Reset retry counter
+        retryAttempts.current = 0;
       }
     } catch (error) {
       console.error('Error checking itinerary data:', error);
+      
+      // On API error, also try retry if we haven't exceeded limits
+      if (retryAttempts.current < maxRetries && lastQueryRef.current) {
+        retryAttempts.current += 1;
+        console.log(`API error, attempting retry ${retryAttempts.current}/${maxRetries}`);
+        
+        // Longer delay for API error retries
+        const delay = 2000 + (retryAttempts.current * 1000); // Increase delay with each retry
+        
+        setTimeout(() => {
+          const retryQuery = generateRetryQuery(lastQueryRef.current, retryAttempts.current);
+          processUserText(retryQuery, true); // Mark as retry
+        }, delay);
+      }
     }
   };
 
   // Shared function to process a free-form user text via chatbot
-  const processUserText = async (text) => {
+  const processUserText = async (text, isRetry = false) => {
     const convId = conversationId || ensureConversationId();
     if (convId && convId !== conversationId) {
       setConversationId(convId);
     }
+    
+    // Store original query for potential retries (only for non-retry attempts)
+    if (!isRetry) {
+      lastQueryRef.current = text;
+      retryAttempts.current = 0; // Reset retry counter for new queries
+    }
+    
     startAssistantTyping();
     let firstAssistantChunk = true;
+    const isFirstUserMessage = !initialProcessedRef.current;
+    
     try {
       const { streamUrl } = await postChatMessage({ content: text, conversationId: convId });
       await streamChat({
@@ -136,7 +255,12 @@ const FinalTripPlannerPage = () => {
             const content = evt.content || '';
             if (!content) return;
             if (firstAssistantChunk) {
-              addMessage({ text: content, sender: 'assistant' });
+              // Replace initial message if this is the first user interaction
+              const replaceInitial = isFirstUserMessage && !initialProcessedRef.current;
+              addMessage({ text: content, sender: 'assistant' }, replaceInitial);
+              if (isFirstUserMessage) {
+                initialProcessedRef.current = true;
+              }
               firstAssistantChunk = false;
             } else {
               setLastAssistantMessage(content);
@@ -144,14 +268,19 @@ const FinalTripPlannerPage = () => {
           }
           if (evt.event === 'done') {
             // Check for itinerary data after the stream is done
-            checkForItineraryData(convId);
+            // Only retry on empty plans for non-retry requests to avoid infinite loops
+            checkForItineraryData(convId, !isRetry);
           }
         },
       });
     } catch (e) {
       const fallback = e.message || 'Sorry, something went wrong.';
       if (firstAssistantChunk) {
-        addMessage({ text: fallback, sender: 'assistant' });
+        const replaceInitial = isFirstUserMessage && !initialProcessedRef.current;
+        addMessage({ text: fallback, sender: 'assistant' }, replaceInitial);
+        if (isFirstUserMessage) {
+          initialProcessedRef.current = true;
+        }
       } else {
         setLastAssistantMessage(fallback);
       }
@@ -173,6 +302,11 @@ const FinalTripPlannerPage = () => {
 
   // If navigated with initialQuery from Layla page, auto-process it once
   useEffect(() => {
+    // Prevent duplicate processing in React StrictMode
+    if (initialQueryProcessedRef.current) {
+      return;
+    }
+    
     const navConversationId = location?.state?.conversationId;
     const resolvedConversationId = navConversationId || ensureConversationId();
     if (resolvedConversationId && resolvedConversationId !== conversationId) {
@@ -180,6 +314,7 @@ const FinalTripPlannerPage = () => {
     }
     const q = location?.state?.initialQuery;
     if (q && typeof q === 'string' && q.trim()) {
+      initialQueryProcessedRef.current = true;
       processUserText(q);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -240,6 +375,7 @@ const FinalTripPlannerPage = () => {
                     </div>
                   </div>
                 </div>
+                
                 {/* Itinerary Cards - Show when itinerary is done */}
                 {isItineraryDone && itineraryData && (
                   <ItineraryCards 
