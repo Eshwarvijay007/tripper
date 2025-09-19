@@ -1,74 +1,39 @@
+<div align="center">
+  <img src="https://raw.githubusercontent.com/Eshwarvijay007/tripper/main/tripplanner/src/assets/logos/logo.png" alt="naomi.ai logo" width="150">
+  <h1>naomi.ai</h1>
+  <p>✨ Your AI-powered travel assistant to plan your next adventure. ✨</p>
+  <p>
+    <a href="https://noami-ai-248534326141.asia-south1.run.app"><strong>🌐 Visit naomi.ai Live</strong></a>
+  </p>
+  <a href="https://coderabbit.ai">
+    ![CodeRabbit Pull Request Reviews](https://img.shields.io/coderabbit/prs/github/Eshwarvijay007/tripper?utm_source=oss&utm_medium=github&utm_campaign=Eshwarvijay007%2Ftripper&labelColor=171717&color=FF570A&link=httpshttps%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews)
+  </a>
+</div>
 
-![CodeRabbit Pull Request Reviews](https://img.shields.io/coderabbit/prs/github/Eshwarvijay007/tripper?utm_source=oss&utm_medium=github&utm_campaign=Eshwarvijay007%2Ftripper&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews)
-Naomi Travel Backend (FastAPI Scaffold)
-===========================================
-This is a scaffolded backend for an AI travel planner in FastAPI. It defines a clean API surface for chat, itinerary planning, and search (flights, hotels, POIs). Auth is bypassed for now.
+## 🚀 About naomi.ai
 
-Quick Start
------------
-- Install: `pip install -r requirements.txt`
-- Run: `uvicorn app.main:app --reload`
-- Health: `GET http://localhost:8000/api/healthz`
+**naomi.ai** is an intelligent travel planner that helps you discover, plan, and book your dream trips. Whether you're looking for a weekend getaway or a multi-week expedition, Naomi uses the power of AI to create personalized itineraries tailored to your preferences.
 
-Environment Configuration
--------------------------
-Set these env vars when integrating Booking.com via RapidAPI:
+Just chat with Naomi, tell her your travel style, interests, and budget, and she'll handle the rest!
 
-- `BOOKING_RAPIDAPI_KEY` — your RapidAPI key (do not commit it)
-- `BOOKING_RAPIDAPI_HOST` — default `booking-com15.p.rapidapi.com`
-- `BOOKING_RAPIDAPI_BASE` — default `https://booking-com15.p.rapidapi.com`
+## ✨ Features
 
-For Google Places (nearby attractions):
+*   **Conversational AI:** Chat with Naomi in natural language to plan your trip.
+*   **Personalized Itineraries:** Get custom travel plans based on your interests.
+*   **Destination Discovery:** Find new and exciting places to visit.
+*   **Accommodation Suggestions:** Discover the best hotels and places to stay.
+*   **Attraction Recommendations:** Get suggestions for sights, activities, and restaurants.
+*   **Interactive Maps:** Visualize your trip on a map.
 
-- `GOOGLE_PLACES_API_KEY` — your Google Maps Platform key (Places/Maps JS enabled)
+## 🛠️ Tech Stack
 
-Enable the following Google Maps Platform APIs for the key:
-- Places API (Text Search, Nearby Search, Place Photos)
-- Maps JavaScript API (if used on the frontend)
+*   **Frontend:** React, Vite, Tailwind CSS
+*   **Backend:** Python, FastAPI
+*   **AI:** Google Gemini
+*   **Database:** MongoDB
 
-If you see empty results from `/api/places/suggest`, verify the key has Places API enabled and is allowed for server-side HTTP requests (no referrer-only restriction). The backend returns 502 with Google error details when the Places API responds with a non-OK status.
+---
 
-For Gemini (LLM planning):
-
-- `GEMINI_API_KEY` — your Google AI Studio API key (or set `GOOGLE_API_KEY`)
-
-API Surface (Initial Draft)
---------------------------
-- Chat
-  - `POST /api/chat/messages` → start/continue a conversation. Returns `conversation_id`, `message_id`, and `stream_url`.
-  - `GET /api/chat/stream/{conversation_id}` → NDJSON stream of stubbed events.
-
-- Itineraries
-  - `POST /api/itineraries` (TripCreateRequest) → `202 Accepted` with `JobStatus {id,status,result_type,result_id}`; stub immediately completes and creates a placeholder itinerary.
-  - `GET /api/itineraries/{id}` → Itinerary JSON.
-  - `PATCH /api/itineraries/{id}` → Shallow updates to title/constraints.
-  - `POST /api/itineraries/{id}/regenerate` → `202` JobStatus (stub completes immediately).
-
-- Search
-  - `POST /api/search/flights` (FlightSearchRequest) → `options[]` (stubbed Sample Air).
-  - `POST /api/search/hotels` (HotelSearchRequest) → `options[]` with paging.
-  - `POST /api/search/poi` (PoiSearchRequest) → `items[]` with scores.
-
-- Jobs
-  - `GET /api/jobs/{job_id}` → JobStatus.
-- Runs (orchestration)
-  - `POST /api/runs/itinerary` → start a planning run (stubbed)
-  - `GET /api/runs/{id}` → run status
-  - `GET /api/runs/{id}/stream` → SSE node/tool events (stubbed)
-
-- Booking (RapidAPI)
-  - `GET /api/booking/destinations?query=...` → destination suggestions (maps to Booking searchDestination)
-
-Schemas
--------
-- See `app/schemas/*` for Pydantic models (trip creation, itinerary, search, chat, jobs, common types).
-
-Notes & Next Steps
-------------------
-- Auth: Currently bypassed. Add JWT/session when ready; wire a dependency for optional user context.
-- Persistence: In-memory stores (`app/services/store.py`). Replace with Postgres + Redis when implementing.
-- LLM/Planning: A background runner executes a simple planner now. Next: integrate LangGraph and Gemini-driven intent parsing/day planning, with hotel/flight/POI tools.
-- Streaming: Current stream is NDJSON. Swap to SSE if preferred.
-- Validation: Add tighter validation and enums for interests, pace, filters.
-- Booking.com hotels: Provide the hotel listing/availability endpoint(s) cURL to wire `/api/search/hotels` to live data. We already support destination resolution via `/api/booking/destinations`.
-- Google Places: `/api/search/poi` will return nearby attractions when `location.lat/lon` is provided. Remember to display Places results on a Google Map and follow attribution/retention terms.
+<p align="center">
+  <em>Let's make your travel dreams a reality!</em>
+</p>
