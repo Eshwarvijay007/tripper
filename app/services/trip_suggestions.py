@@ -325,7 +325,7 @@ def get_stay_plan_suggestions(
     all_accommodations = []
     
     for query_term in queries:
-        stay_key = f"stay::{origin_name}::{query_term}::{language or ''}::v1"
+        stay_key = f"stay::{origin_name}::{query_term}::{language or ''}::v2"
         stay_data = _cache_get(stay_key)
         
         if not stay_data:
@@ -349,7 +349,7 @@ def get_stay_plan_suggestions(
             _cache_set(stay_key, stay_data)
         
         # Process accommodations
-        for item in stay_data.get("items", []):
+        for hotel_index, item in enumerate(stay_data.get("items", [])):
             if item.get("name") and item.get("lat") and item.get("lon"):
                 # Get enhanced details if place_id available
                 place_id = item.get("place_id")
@@ -360,11 +360,23 @@ def get_stay_plan_suggestions(
                     except Exception:
                         pass
                 
-                # Calculate price range based on price level and budget category
+                # Calculate price range - use diverse pricing if no Google price level
                 price_level = item.get("price_level") or enhanced_data.get("raw_data", {}).get("priceLevel")
-                pricing_info = _get_pricing_info(
-                    price_level, budget_range, budget, budget_currency, display_currency
-                )
+                
+                if not price_level:
+                    # Use new diverse pricing system when Google data is missing
+                    pricing_info = _generate_diverse_pricing_for_hotel(
+                        hotel_name=item.get("name", ""),
+                        budget=budget,
+                        budget_category=budget_range,
+                        hotel_index=len(all_accommodations) + hotel_index,
+                        display_currency=display_currency
+                    )
+                else:
+                    # Use traditional pricing with Google data
+                    pricing_info = _get_pricing_info(
+                        price_level, budget_range, budget, budget_currency, display_currency
+                    )
                 
                 # Extract phone and website from enhanced_data
                 raw_data = enhanced_data.get("raw_data", {})
@@ -583,6 +595,98 @@ def _determine_budget_category(budget: Optional[float]) -> str:
         return "mid-range"
     else:
         return "luxury"
+
+
+def _generate_diverse_pricing_for_hotel(
+    hotel_name: str, 
+    budget: Optional[float], 
+    budget_category: str,
+    hotel_index: int = 0,
+    display_currency: str = "INR"
+) -> Dict[str, Any]:
+    """Generate diverse pricing for hotels using hotel-specific seeds and 4-tier system."""
+    import hashlib
+    
+    # Create unique seed per hotel using name + budget category for deterministic randomness
+    seed_input = f"{hotel_name.lower()}_{budget_category}_{hotel_index}"
+    seed = int(hashlib.md5(seed_input.encode()).hexdigest()[:8], 16)
+    
+    # Define 4 diverse price tiers with realistic ranges
+    price_tiers = [
+        {
+            "name": "Budget",
+            "budget_multiplier": (0.3, 0.5),  # 30%-50% of user budget
+            "range_multiplier": (1.0, 2.0),   # min to 2x min
+            "min_usd": 50
+        },
+        {
+            "name": "Moderate", 
+            "budget_multiplier": (0.5, 0.7),  # 50%-70% of user budget
+            "range_multiplier": (0.9, 1.2),   # 90%-120% range
+            "min_usd": 80
+        },
+        {
+            "name": "Premium",
+            "budget_multiplier": (0.8, 1.0),  # 80%-100% of user budget  
+            "range_multiplier": (1.3, 1.6),   # 130%-160% range
+            "min_usd": 150
+        },
+        {
+            "name": "Luxury",
+            "budget_multiplier": (1.0, 1.3),  # 100%-130% of user budget
+            "range_multiplier": (1.8, 2.5),   # 180%-250% range
+            "min_usd": 300
+        }
+    ]
+    
+    # Select tier based on hotel seed (deterministic but varied)
+    tier_index = seed % len(price_tiers)
+    selected_tier = price_tiers[tier_index]
+    
+    if budget is not None and budget > 0:
+        # Use budget-based pricing with tier-specific multipliers
+        budget_min_mult, budget_max_mult = selected_tier["budget_multiplier"]
+        range_min_mult, range_max_mult = selected_tier["range_multiplier"]
+        
+        # Calculate base price from budget
+        budget_variation = (seed % 40) / 100.0  # 0-40% variation
+        base_budget_mult = budget_min_mult + (budget_max_mult - budget_min_mult) * budget_variation
+        base_price = max(selected_tier["min_usd"], budget * base_budget_mult)
+        
+        # Apply range multipliers
+        price_min = int(base_price * range_min_mult)
+        price_max = int(base_price * range_max_mult)
+        
+    else:
+        # Fallback pricing when no budget provided
+        min_base = selected_tier["min_usd"]
+        max_base = min_base * 4  # 4x multiplier for variety
+        
+        # Add hotel-specific variation
+        price_variation = (seed % 100) / 100.0  # 0-100% variation within tier
+        base_price = min_base + (max_base - min_base) * price_variation
+        
+        range_min_mult, range_max_mult = selected_tier["range_multiplier"]
+        price_min = int(base_price * range_min_mult)
+        price_max = int(base_price * range_max_mult)
+    
+    # Ensure realistic minimum difference
+    min_difference = max(50, price_min * 0.3)  # At least $50 or 30% difference
+    if price_max - price_min < min_difference:
+        price_max = price_min + int(min_difference)
+    
+    # Convert to display currency (INR)
+    final_min = _convert_currency(price_min, "USD", display_currency)
+    final_max = _convert_currency(price_max, "USD", display_currency)
+    
+    return {
+        "range_min": int(final_min),
+        "range_max": int(final_max),
+        "currency": display_currency,
+        "per": "night",
+        "level": selected_tier["name"],
+        "tier_info": f"{selected_tier['name']} Tier"  # For debugging
+    }
 
 
 def _categorize_accommodation(name: str, query_term: str) -> str:

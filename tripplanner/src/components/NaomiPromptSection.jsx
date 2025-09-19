@@ -7,7 +7,7 @@ import { ensureConversationId } from '../lib/conversation';
 
 const NaomiPromptSection = () => {
   const [inputValue, setInputValue] = useState("");
-  const { addMessage, conversationId, setConversationId } =
+  const { addMessage, conversationId, setConversationId, initialProcessedRef } =
     useContext(ChatContext);
   const [isTyping, setIsTyping] = useState(false);
   const navigate = useNavigate();
@@ -15,9 +15,15 @@ const NaomiPromptSection = () => {
 
   const handleSendMessage = async (message) => {
     const text = message || inputValue;
-    if (text.trim() === "") return;
-    addMessage({ text, sender: "user" });
-    setInputValue("");
+    if (text.trim() === '') return;
+    
+    // Mark that we're processing the first user message
+    if (!initialProcessedRef.current) {
+      initialProcessedRef.current = true;
+    }
+    
+    addMessage({ text, sender: 'user' });
+    setInputValue('');
     setChatDisabled(true);
     let currentConversationId = conversationId;
     if (!currentConversationId) {
