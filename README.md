@@ -4,9 +4,26 @@
   <p>
     <a href="https://noami-ai-248534326141.asia-south1.run.app"><strong>🌐 Visit naomi.ai Live</strong></a>
   </p>
-  <a href="https://coderabbit.ai">
-    ![CodeRabbit Pull Request Reviews](https://img.shields.io/coderabbit/prs/github/Eshwarvijay007/tripper?utm_source=oss&utm_medium=github&utm_campaign=Eshwarvijay007%2Ftripper&labelColor=171717&color=FF570A&link=httpshttps%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews)
-  </a>
+  <p align="center">
+    <a href="https://coderabbit.ai">
+      <img src="https://img.shields.io/coderabbit/prs/github/Eshwarvijay007/tripper?utm_source=oss&utm_medium=github&utm_campaign=Eshwarvijay007%2Ftripper&labelColor=171717&color=FF570A&link=httpshttps%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews" alt="CodeRabbit Pull Request Reviews" />
+    </a>
+    <a href="https://www.python.org/">
+      <img src="https://img.shields.io/badge/python-3.8%2B-blue" alt="Python" />
+    </a>
+    <a href="https://fastapi.tiangolo.com/">
+      <img src="https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi" alt="FastAPI" />
+    </a>
+    <a href="https://react.dev/">
+      <img src="https://img.shields.io/badge/React-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB" alt="React" />
+    </a>
+    <a href="https://vitejs.dev/">
+      <img src="https://img.shields.io/badge/vite-%23646CFF.svg?style=for-the-badge&logo=vite&logoColor=white" alt="Vite" />
+    </a>
+    <a href="https://tailwindcss.com/">
+      <img src="https://img.shields.io/badge/Tailwind_CSS-06B6D4?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind CSS" />
+    </a>
+  </p>
 </div>
 
 ## 🚀 About naomi.ai
@@ -35,4 +52,5 @@ Just chat with Naomi, tell her your travel style, interests, and budget, and she
 
 <p align="center">
   <em>Let's make your travel dreams a reality!</em>
+</p>
 </p>
