@@ -52,8 +52,9 @@ Your task:
 2. Ask for these details in a natural, conversational way that flows from the user's last message.
 3. Keep your response to 2-3 sentences maximum, ending with a question.
 4. For start date, mention that "flexible" is an acceptable answer.
-5. Prioritize fields that are logically connected or build on each other.
-6. Vary your tone and phrasing from previous turns.
+5. For trip type, include 1-2 examples from: Adventure, Leisure, Business, Wellness, Cultural, Romantic, Family, Solo
+6. Prioritize fields that are logically connected or build on each other.
+7. Vary your tone and phrasing from previous turns.
 
 Missing fields to choose from:
 {chr(10).join([f"- {label}" for label in missing_labels])}
@@ -62,6 +63,8 @@ Examples of good groupings:
 - Ask for destination + trip type together (they're related)
 - Ask for number of days + start date together (scheduling related)
 - Ask for budget along with other practical details
+
+When asking about trip type, include examples like "Adventure or Leisure" or "Cultural or Romantic" to help guide the user.
 
 Craft a natural response that asks for the most logical 1-3 missing details now.
 """
