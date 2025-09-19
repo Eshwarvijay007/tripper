@@ -24,30 +24,38 @@ const TripTypesSection = () => {
 
   const tripTypes = [
     {
-      title: 'Family Trip Planner: Create Balanced Itineraries for All Ages',
-      description: 'Traveling with family means balancing sightseeing with downtime. A family trip planner needs to account for different energy levels, child-friendly activities, and convenient accommodations. Trip Planner AI ensures you don\'t overpack the schedule while still hitting the highlights.',
-      example: 'A 5-day Barcelona itinerary may include mornings at Gaudí landmarks, afternoons at the beach, and evenings with flexible dining options that work for kids and adults alike, plus suggested day trips to nearby gems like Montserrat or Sitges.',
-      link: '/layla?type=family'
+      title: "Family Trip Planner: Create Balanced Itineraries for All Ages",
+      description:
+        "Traveling with family means balancing sightseeing with downtime. A family trip planner needs to account for different energy levels, child-friendly activities, and convenient accommodations. Trip Planner AI ensures you don't overpack the schedule while still hitting the highlights.",
+      example:
+        "A 5-day Barcelona itinerary may include mornings at Gaudí landmarks, afternoons at the beach, and evenings with flexible dining options that work for kids and adults alike, plus suggested day trips to nearby gems like Montserrat or Sitges.",
+      link: "/naomi?type=family",
     },
     {
-      title: 'Couples Trip Planner: Romantic Getaways Without the Stress',
-      description: 'Couples want moments, not stress. Trip Planner AI designs couples getaways with the right mix of iconic experiences and hidden gems. Think candlelit dinners, scenic walks, and flexible pacing so you can relax, not rush.',
-      example: 'A weekend in Paris might feature an Eiffel Tower evening view, a private Seine cruise, and a curated list of boutique hotels with romantic charm.',
-      link: '/layla?type=couples'
+      title: "Couples Trip Planner: Romantic Getaways Without the Stress",
+      description:
+        "Couples want moments, not stress. Trip Planner AI designs couples getaways with the right mix of iconic experiences and hidden gems. Think candlelit dinners, scenic walks, and flexible pacing so you can relax, not rush.",
+      example:
+        "A weekend in Paris might feature an Eiffel Tower evening view, a private Seine cruise, and a curated list of boutique hotels with romantic charm.",
+      link: "/naomi?type=couples",
     },
     {
-      title: 'Road Trip Planner: Scenic Routes Optimized with AI',
-      description: 'Road trips are about the journey as much as the destination. With the support of an AI itinerary builder for road trips, travelers save time while enjoying curated routes and must-see stops. Trip Planner AI maps optimized stopovers, scenic viewpoints, and overnight stays so you\'re never driving too long in one stretch.',
-      example: 'Driving the Pacific Coast Highway? Our AI suggests overnight stops in Santa Barbara, Big Sur, and Monterey, with side trips to national parks and coastal hikes.',
-      link: '/layla?type=roadtrip'
+      title: "Road Trip Planner: Scenic Routes Optimized with AI",
+      description:
+        "Road trips are about the journey as much as the destination. With the support of an AI itinerary builder for road trips, travelers save time while enjoying curated routes and must-see stops. Trip Planner AI maps optimized stopovers, scenic viewpoints, and overnight stays so you're never driving too long in one stretch.",
+      example:
+        "Driving the Pacific Coast Highway? Our AI suggests overnight stops in Santa Barbara, Big Sur, and Monterey, with side trips to national parks and coastal hikes.",
+      link: "/naomi?type=roadtrip",
     },
     {
-      title: 'Multi-City Trip Planner: Europe, Asia & Beyond',
-      description: 'Multi-city trips can be complex, multiple flights, trains, transfers, and hotels. Using an AI trip planner for multi-city travel, you\'ll see optimized connections, transfers, and overnight stays in seconds.',
-      example: 'A 10-day Europe trip could start in Rome, connect to Florence by train, then fly to Paris, all optimized for cost and convenience. Our AI ensures you know when to fly, when to drive, and when to take the train.',
-      link: '/layla?type=multicity'
-    }
-  ]
+      title: "Multi-City Trip Planner: Europe, Asia & Beyond",
+      description:
+        "Multi-city trips can be complex, multiple flights, trains, transfers, and hotels. Using an AI trip planner for multi-city travel, you'll see optimized connections, transfers, and overnight stays in seconds.",
+      example:
+        "A 10-day Europe trip could start in Rome, connect to Florence by train, then fly to Paris, all optimized for cost and convenience. Our AI ensures you know when to fly, when to drive, and when to take the train.",
+      link: "/naomi?type=multicity",
+    },
+  ];
 
   return (
     <div 

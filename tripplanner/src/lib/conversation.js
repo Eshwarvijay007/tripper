@@ -1,7 +1,10 @@
-const COOKIE_NAME = 'layla_conversation_id';
+const COOKIE_NAME = "naomi_conversation_id";
 
 const generateConversationId = () => {
-  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+  if (
+    typeof crypto !== "undefined" &&
+    typeof crypto.randomUUID === "function"
+  ) {
     return crypto.randomUUID();
   }
   const rand = Math.random().toString(16).slice(2, 10);
@@ -9,20 +12,20 @@ const generateConversationId = () => {
 };
 
 const readCookie = (name) => {
-  if (typeof document === 'undefined' || !document.cookie) return null;
+  if (typeof document === "undefined" || !document.cookie) return null;
   const cookie = document.cookie
-    .split(';')
+    .split(";")
     .map((part) => part.trim())
     .find((part) => part.startsWith(`${name}=`));
   if (!cookie) return null;
-  const value = cookie.split('=')[1];
+  const value = cookie.split("=")[1];
   return value ? decodeURIComponent(value) : null;
 };
 
 export const getConversationIdFromCookie = () => readCookie(COOKIE_NAME);
 
 export const setConversationIdCookie = (id) => {
-  if (typeof document === 'undefined') return;
+  if (typeof document === "undefined") return;
   const encoded = encodeURIComponent(id);
   document.cookie = `${COOKIE_NAME}=${encoded};path=/;SameSite=Lax`;
 };
@@ -36,6 +39,6 @@ export const ensureConversationId = () => {
 };
 
 export const clearConversationIdCookie = () => {
-  if (typeof document === 'undefined') return;
+  if (typeof document === "undefined") return;
   document.cookie = `${COOKIE_NAME}=;path=/;expires=Thu, 01 Jan 1970 00:00:00 GMT;SameSite=Lax`;
 };

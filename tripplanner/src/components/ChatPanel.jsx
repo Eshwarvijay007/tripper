@@ -1,9 +1,17 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useRef, useEffect } from 'react';
 import { ChatContext } from '../context/ChatContext';
 
 const ChatPanel = ({ onQuickAction, onUserMessage }) => {
   const { messages, addMessage, isAssistantTyping } = useContext(ChatContext);
   const [inputValue, setInputValue] = useState('');
+  const scrollContainerRef = useRef(null);
+
+  // Auto-scroll to bottom when messages change or when typing indicator changes
+  useEffect(() => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
+    }
+  }, [messages, isAssistantTyping]);
 
   // Initial assistant message now seeded in ChatContext
 
@@ -29,7 +37,10 @@ const ChatPanel = ({ onQuickAction, onUserMessage }) => {
   return (
     <section className="relative h-full bg-transparent">
       {/* Scrollable region (messages + quick replies) with reserved bottom space for input */}
-      <div className="absolute inset-x-0 top-0 bottom-20 overflow-y-auto px-4 pt-4 pb-2">
+      <div 
+        ref={scrollContainerRef}
+        className="absolute inset-x-0 top-0 bottom-20 overflow-y-auto px-4 pt-4 pb-2"
+      >
         {messages.map((msg, index) => (
           <div
             key={index}

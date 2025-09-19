@@ -6,8 +6,8 @@
     <title>Trip Planning Chat - Naomi AI</title>
     <meta name="description" content="Chat with Naomi AI to plan your perfect trip">
     
-    <link rel="icon" href="https://layla.ai/theme/layla/new-character-small.webp" type="image/webp">
-    <link rel="stylesheet" href="layla-styles.css">
+    <link rel="icon" href="https://naomi.ai/theme/naomi/new-character-small.webp" type="image/webp">
+    <link rel="stylesheet" href="naomi-styles.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -28,9 +28,9 @@
     <div class="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 px-4 py-3">
         <div class="flex items-center justify-between max-w-4xl mx-auto">
             <div class="flex items-center gap-3">
-                <a href="layla.html" class="flex items-center gap-2">
-                    <img alt="Layla avatar" width="32" height="32" class="rounded-full" src="https://layla.ai/theme/layla/new-character-small.webp">
-                    <span class="font-semibold text-lg">Layla</span>
+                <a href="naomi.html" class="flex items-center gap-2">
+                    <img alt="Naomi avatar" width="32" height="32" class="rounded-full" src="https://naomi.ai/theme/naomi/new-character-small.webp">
+                    <span class="font-semibold text-lg">Naomi</span>
                 </a>
                 <span class="text-sm text-gray-500">Trip Planning</span>
             </div>
@@ -50,11 +50,11 @@
             <div id="chatMessages" class="space-y-6">
                 <!-- Initial message -->
                 <div class="chat-message assistant">
-                    <img class="avatar" alt="Layla" src="https://layla.ai/theme/layla/new-character-small.webp">
+                    <img class="avatar" alt="Naomi" src="https://naomi.ai/theme/naomi/new-character-small.webp">
                     <div class="message-content">
-                        Hey there, Layla here! Excited to help you create your perfect next trip. Just tell me what you're thinking and let's do this together.
+                        Hey there, Naomi here! Excited to help you create your perfect next trip. Just tell me what you're thinking and let's do this together.
                         <button class="copy-button mt-2" onclick="copyMessage(this)">
-                            <img src="https://layla.ai/buttons/copy-black.svg" width="16" height="16" alt="copy">
+                            <img src="https://naomi.ai/buttons/copy-black.svg" width="16" height="16" alt="copy">
                         </button>
                     </div>
                 </div>
@@ -65,7 +65,7 @@
                 </div>
 
                 <div class="chat-message assistant">
-                    <img class="avatar" alt="Layla" src="https://layla.ai/theme/layla/new-character-small.webp">
+                    <img class="avatar" alt="Naomi" src="https://naomi.ai/theme/naomi/new-character-small.webp">
                     <div class="message-content">
                         Awesome! Let's get this trip started.
 
@@ -74,7 +74,7 @@
                         <strong>Where would you like to go?</strong> (You can name a specific city, country, or region, or if you want, I can inspire you with some cool destinations nearby.)
                         
                         <button class="copy-button mt-2" onclick="copyMessage(this)">
-                            <img src="https://layla.ai/buttons/copy-black.svg" width="16" height="16" alt="copy">
+                            <img src="https://naomi.ai/buttons/copy-black.svg" width="16" height="16" alt="copy">
                         </button>
                         
                         <div class="quick-suggestions">
@@ -117,7 +117,7 @@
                         style="max-height: 120px;"
                     ></textarea>
                     <button class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                        <img alt="microphone" width="20" height="20" src="https://layla.ai/microphone-icon.svg">
+                        <img alt="microphone" width="20" height="20" src="https://naomi.ai/microphone-icon.svg">
                     </button>
                 </div>
                 <button 
@@ -125,7 +125,7 @@
                     disabled
                     class="bg-primary text-white p-3 rounded-lg hover:bg-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
-                    <img alt="send" width="20" height="20" src="https://layla.ai/_next/static/media/send.203578b9.svg">
+                    <img alt="send" width="20" height="20" src="https://naomi.ai/_next/static/media/send.203578b9.svg">
                 </button>
             </div>
             
@@ -142,7 +142,7 @@
     <div id="tripPlanningModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
         <div class="bg-white rounded-lg p-8 max-w-md mx-4">
             <div class="text-center">
-                <img src="https://layla.ai/_next/static/media/new-character-medium.455f6dc5.png" alt="Layla" class="w-24 h-24 mx-auto mb-4">
+                <img src="https://naomi.ai/_next/static/media/new-character-medium.455f6dc5.png" alt="Naomi" class="w-24 h-24 mx-auto mb-4">
                 <h2 class="text-xl font-bold mb-6">Designing your trip...</h2>
                 
                 <div class="space-y-3 text-left text-sm">
@@ -243,11 +243,11 @@
             const messageDiv = document.createElement('div');
             messageDiv.className = 'chat-message assistant';
             messageDiv.innerHTML = `
-                <img class="avatar" alt="Layla" src="https://layla.ai/theme/layla/new-character-small.webp">
+                <img class="avatar" alt="Naomi" src="https://naomi.ai/theme/naomi/new-character-small.webp">
                 <div class="message-content">
                     ${message}
                     <button class="copy-button mt-2" onclick="copyMessage(this)">
-                        <img src="https://layla.ai/buttons/copy-black.svg" width="16" height="16" alt="copy">
+                        <img src="https://naomi.ai/buttons/copy-black.svg" width="16" height="16" alt="copy">
                     </button>
                 </div>
             `;
@@ -260,7 +260,7 @@
             typingDiv.className = 'chat-message assistant';
             typingDiv.id = 'typing-indicator';
             typingDiv.innerHTML = `
-                <img class="avatar" alt="Layla" src="https://layla.ai/theme/layla/new-character-small.webp">
+                <img class="avatar" alt="Naomi" src="https://naomi.ai/theme/naomi/new-character-small.webp">
                 <div class="typing-indicator">
                     <div class="typing-dot"></div>
                     <div class="typing-dot"></div>
@@ -308,7 +308,7 @@
             navigator.clipboard.writeText(messageContent).then(() => {
                 button.innerHTML = '<span class="text-green-600 text-xs">Copied!</span>';
                 setTimeout(() => {
-                    button.innerHTML = '<img src="https://layla.ai/buttons/copy-black.svg" width="16" height="16" alt="copy">';
+                    button.innerHTML = '<img src="https://naomi.ai/buttons/copy-black.svg" width="16" height="16" alt="copy">';
                 }, 2000);
             });
         }
