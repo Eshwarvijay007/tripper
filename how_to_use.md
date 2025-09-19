@@ -1,4 +1,4 @@
-# 🚀 Trip Planner - Setup & Run Guide
+# 🚀 Naomi.ai - Setup & Run Guide
 
 A complete AI-powered travel planning application with React frontend and FastAPI backend.
 
@@ -61,14 +61,14 @@ npm install
 
 **Terminal 1 - Start Backend:**
 ```bash
-cd /Users/eshwar/eshwarhq/tripper
+cd tripper
 source venv/bin/activate
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 **Terminal 2 - Start Frontend:**
 ```bash
-cd /Users/eshwar/eshwarhq/tripper/tripplanner
+cd tripplanner
 npm run dev
 ```
 
@@ -85,15 +85,15 @@ If you prefer to serve everything from one port (like in production):
 #### Step 1: Build Frontend
 
 ```bash
-cd /Users/eshwar/eshwarhq/tripper/tripplanner
+cd tripplanner
 npm run build
 ```
 
 #### Step 2: Configure Backend to Serve Frontend
 
 ```bash
-cd /Users/eshwar/eshwarhq/tripper
-export FRONTEND_DIST="/Users/eshwar/eshwarhq/tripper/tripplanner/dist"
+cd tripper
+export FRONTEND_DIST="/tripper/tripplanner/dist"
 source venv/bin/activate
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
@@ -112,7 +112,7 @@ The backend loads environment variables from `.env` files. Key variables:
 ```bash
 # Optional API Keys for full functionality
 BOOKING_RAPIDAPI_KEY=your_booking_api_key
-BOOKING_RAPIDAPI_HOST=booking-com15.p.rapidapi.com
+BOOKING_RAPIDAPI_HOST=your-host-key
 GOOGLE_PLACES_API_KEY=your_google_places_key
 GEMINI_API_KEY=your_gemini_api_key
 ```
