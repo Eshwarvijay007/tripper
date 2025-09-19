@@ -11,12 +11,12 @@ const HeroSection = () => {
               Trip Planner AI
             </div>
             <div className="flex items-center justify-center gap-2 pb-4">
-              <img 
-                alt="Trip Planner AI Character" 
-                loading="lazy" 
-                width="180" 
-                height="130" 
-                className="w-75 h-20 rounded-full" 
+              <img
+                alt="Trip Planner AI Character"
+                loading="lazy"
+                width="180"
+                height="130"
+                className="w-75 h-20 rounded-full"
                 src="https://tripplanner.ai/logo/logo.svg"
               />
             </div>
@@ -24,11 +24,13 @@ const HeroSection = () => {
               AI Trip Planner for <br /> Flights, Hotels & Experience
             </h1>
             <p className="mx-auto my-3 max-w-2xl text-center text-gray-700 sm:mx-auto sm:mt-5 sm:text-base md:mt-5 md:text-lg xl:text-xl animate-fade-in-up">
-              Smarter than endless tabs, a personalized trip builder and itinerary generator that saves you hours planning flights, hotels, and activities.
+              Smarter than endless tabs, a personalized trip builder and
+              itinerary generator that saves you hours planning flights, hotels,
+              and activities.
             </p>
-            <Link 
-              className="mx-auto flex items-center gap-2 rounded-full bg-accent-green px-8 py-4 text-lg text-white ring-2 ring-accent-green ring-offset-2 transition-colors hover:bg-accent-green-2 btn-hover animate-fade-in-up" 
-              to="/layla"
+            <Link
+              className="mx-auto flex items-center gap-2 rounded-full bg-accent-green px-8 py-4 text-lg text-white ring-2 ring-accent-green ring-offset-2 transition-colors hover:bg-accent-green-2 btn-hover animate-fade-in-up"
+              to="/naomi"
             >
               <MapPin className="mb-1 text-xl" size={20} />
               Create a New Trip
@@ -37,7 +39,7 @@ const HeroSection = () => {
         </div>
       </main>
     </div>
-  )
+  );
 }
 
 export default HeroSection

@@ -5,18 +5,19 @@ import { Globe2, Briefcase, Users, FileText, Send } from 'lucide-react';
 import { ChatContext } from '../context/ChatContext';
 import { ensureConversationId } from '../lib/conversation';
 
-const LaylaPromptSection = () => {
-  const [inputValue, setInputValue] = useState('');
-  const { addMessage, conversationId, setConversationId } = useContext(ChatContext);
+const NaomiPromptSection = () => {
+  const [inputValue, setInputValue] = useState("");
+  const { addMessage, conversationId, setConversationId } =
+    useContext(ChatContext);
   const [isTyping, setIsTyping] = useState(false);
   const navigate = useNavigate();
   const [chatDisabled, setChatDisabled] = useState(false);
 
   const handleSendMessage = async (message) => {
     const text = message || inputValue;
-    if (text.trim() === '') return;
-    addMessage({ text, sender: 'user' });
-    setInputValue('');
+    if (text.trim() === "") return;
+    addMessage({ text, sender: "user" });
+    setInputValue("");
     setChatDisabled(true);
     let currentConversationId = conversationId;
     if (!currentConversationId) {
@@ -25,14 +26,16 @@ const LaylaPromptSection = () => {
     } else {
       setConversationId(currentConversationId);
     }
-    navigate('/trip', { state: { initialQuery: text, conversationId: currentConversationId } });
+    navigate("/trip", {
+      state: { initialQuery: text, conversationId: currentConversationId },
+    });
   };
 
   const quickActions = [
-    { text: 'Create a new trip', icon: <Globe2 /> },
-    { text: 'Inspire me where to go', icon: <Briefcase /> },
-    { text: 'Build a road trip', icon: <Users /> },
-    { text: 'Plan a last minute getaway', icon: <FileText /> },
+    { text: "Create a new trip", icon: <Globe2 /> },
+    { text: "Inspire me where to go", icon: <Briefcase /> },
+    { text: "Build a road trip", icon: <Users /> },
+    { text: "Plan a last minute getaway", icon: <FileText /> },
   ];
 
   return (
@@ -52,13 +55,13 @@ const LaylaPromptSection = () => {
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
                     onKeyDown={(e) => {
-                      if (e.key === 'Enter' && !e.shiftKey) {
+                      if (e.key === "Enter" && !e.shiftKey) {
                         e.preventDefault();
                         handleSendMessage();
                       }
                     }}
                     placeholder="Plan a trip to..."
-                    className="border-input placeholder:text-layla-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 flex field-sizing-content min-h-16 w-full rounded-md bg-transparent px-3 py-2 transition-[color,box-shadow] outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm dark:bg-transparent border-0 shadow-none focus-visible:ring-0 text-base resize-none overflow-y-auto"
+                    className="border-input placeholder:text-naomi-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 flex field-sizing-content min-h-16 w-full rounded-md bg-transparent px-3 py-2 transition-[color,box-shadow] outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm dark:bg-transparent border-0 shadow-none focus-visible:ring-0 text-base resize-none overflow-y-auto"
                     disabled={chatDisabled}
                   ></textarea>
                 </div>
@@ -86,18 +89,18 @@ const LaylaPromptSection = () => {
               <button
                 key={index}
                 onClick={() => handleSendMessage(action.text)}
-                className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm font-medium transition-all cursor-pointer border bg-layla-background shadow-xs hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2"
+                className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm font-medium transition-all cursor-pointer border bg-naomi-background shadow-xs hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2"
               >
                 {action.icon}
                 {action.text}
               </button>
             ))}
           </div>
-          {/* Conversation renders only on /trip; Layla page is input-only */}
+          {/* Conversation renders only on /trip; Naomi page is input-only */}
         </div>
       </div>
     </motion.section>
   );
 };
 
-export default LaylaPromptSection;
+export default NaomiPromptSection;

@@ -30,7 +30,7 @@ const steps = [
   },
 ];
 
-const LaylaHowItWorksSection = () => {
+const NaomiHowItWorksSection = () => {
   const [activeIndex, setActiveIndex] = useState(0);
 
   const handleStepClick = (index) => {
@@ -47,8 +47,12 @@ const LaylaHowItWorksSection = () => {
     >
       <div className="container mx-auto">
         <div className="mb-8 text-center md:mb-12">
-          <h2 className="text-3xl font-bold leading-tight md:text-4xl lg:text-5xl text-layla-foreground">What you can ask me</h2>
-          <p className="text-layla-muted-foreground mx-auto mt-3 max-w-2xl text-sm md:mt-4 md:text-base">Try one of these asks and let the vacation inspo roll in.</p>
+          <h2 className="text-3xl font-bold leading-tight md:text-4xl lg:text-5xl text-naomi-foreground">
+            What you can ask me
+          </h2>
+          <p className="text-naomi-muted-foreground mx-auto mt-3 max-w-2xl text-sm md:mt-4 md:text-base">
+            Try one of these asks and let the vacation inspo roll in.
+          </p>
         </div>
         <div>
           <div className="mx-auto flex max-w-6xl flex-col-reverse gap-6 md:flex-row md:gap-8 lg:gap-16">
@@ -58,21 +62,35 @@ const LaylaHowItWorksSection = () => {
                   <li
                     key={index}
                     className={`group relative flex cursor-pointer rounded-xl border px-4 py-3 transition-all duration-300 md:px-5 md:py-4 ${
-                      activeIndex === index ? 'border-border bg-accent shadow-sm' : 'hover:border-border hover:bg-accent/30 border-transparent'
+                      activeIndex === index
+                        ? "border-border bg-accent shadow-sm"
+                        : "hover:border-border hover:bg-accent/30 border-transparent"
                     }`}
                     onClick={() => handleStepClick(index)}
                   >
                     <div className="flex w-full items-start gap-3 md:gap-4">
-                      <div className={`flex aspect-square w-9 shrink-0 items-center justify-center rounded-lg transition-colors md:w-10 ${
-                        activeIndex === index ? 'bg-primary-green text-white' : 'bg-muted text-layla-muted-foreground'
-                      }`}>
+                      <div
+                        className={`flex aspect-square w-9 shrink-0 items-center justify-center rounded-lg transition-colors md:w-10 ${
+                          activeIndex === index
+                            ? "bg-primary-green text-white"
+                            : "bg-muted text-naomi-muted-foreground"
+                        }`}
+                      >
                         {step.icon}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <h3 className={`mb-1 text-sm font-semibold transition-colors md:text-base lg:text-lg ${
-                          activeIndex === index ? 'text-layla-foreground' : 'text-layla-muted-foreground'
-                        }`}>{step.title}</h3>
-                        <p className="text-layla-muted-foreground md:group-data-open:opacity-100 line-clamp-2 text-xs transition-all md:text-sm lg:text-sm">{step.description}</p>
+                        <h3
+                          className={`mb-1 text-sm font-semibold transition-colors md:text-base lg:text-lg ${
+                            activeIndex === index
+                              ? "text-naomi-foreground"
+                              : "text-naomi-muted-foreground"
+                          }`}
+                        >
+                          {step.title}
+                        </h3>
+                        <p className="text-naomi-muted-foreground md:group-data-open:opacity-100 line-clamp-2 text-xs transition-all md:text-sm lg:text-sm">
+                          {step.description}
+                        </p>
                       </div>
                     </div>
                   </li>
@@ -106,4 +124,4 @@ const LaylaHowItWorksSection = () => {
   );
 };
 
-export default LaylaHowItWorksSection;
+export default NaomiHowItWorksSection;
