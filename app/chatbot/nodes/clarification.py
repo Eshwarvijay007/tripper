@@ -14,22 +14,18 @@ _ORDERED_FIELDS: List[Tuple[str, str]] = [
 
 
 def clarification_node(state, llm):
-    """Ask for the next missing preference in a conversational, varied way."""
+    """Ask for up to 3 missing preferences in a conversational way."""
 
     prefs = state.get("preferences", {}) or {}
     summary = state.get("summary", "")
     query = state.get("query", "")
     history = state.get("history") or []
 
-    missing = [label for key, label in _ORDERED_FIELDS if not prefs.get(key)]
-    state["missing_fields"] = missing
+    missing_fields = [(key, label) for key, label in _ORDERED_FIELDS if not prefs.get(key)]
+    missing_labels = [label for key, label in missing_fields]
+    state["missing_fields"] = missing_labels
 
-    if not missing:
-        state["answer"] = None
-        return state
-
-    next_key, next_label = next(((k, l) for k, l in _ORDERED_FIELDS if not prefs.get(k)), (None, None))
-    if not next_key:
+    if not missing_fields:
         state["answer"] = None
         return state
 
@@ -44,28 +40,30 @@ def clarification_node(state, llm):
 You are Sunny, a cheerful and empathetic travel-planning assistant.
 
 Context you can rely on:
-- Current preference snapshot: {json.dumps(prefs, indent=2, ensure_ascii=False)}
-- Missing preference labels (in order): {', '.join(missing)}
-- Field you must ask for right now: {next_label}
+- Current preference snapshot: {json.dumps(prefs, ensure_ascii=False)}
+- All missing preference fields: {', '.join(missing_labels)}
 - Last user message: {query}
 - Conversation summary: {summary if summary else 'None provided'}
 - Recent conversation turns:
 {recent_context}
 
-How to respond:
-1. Start with a natural, human-sounding lead-in that connects with the user’s latest message or the plan so far.
-2. Ask for the {next_label} specifically, and explain in a friendly way why you need it for the itinerary.
-3. Keep the reply to one or two sentences. The last sentence must end with a question mark.
-4. Mention that the start date can be "flexible" if {next_label} is the start date.
-5. Do not mention any other missing fields; focus only on {next_label} right now.
-6. Vary your tone and phrasing—do not reuse the same sentence structures from earlier turns or the examples below.
+Your task:
+1. Choose up to 3 of the most important missing fields to ask about based on conversation flow and what makes sense to ask together.
+2. Ask for these details in a natural, conversational way that flows from the user's last message.
+3. Keep your response to 2-3 sentences maximum, ending with a question.
+4. For start date, mention that "flexible" is an acceptable answer.
+5. Prioritize fields that are logically connected or build on each other.
+6. Vary your tone and phrasing from previous turns.
 
-Inspiration only (do not copy):
-- "Great, I’ve got the travel style noted. What city or region should I build the itinerary around?"
-- "Thanks! To fine-tune the schedule, how many days do you want this trip to last?"
-- "Wonderful choice so far; when would you like to set out? Saying \"flexible\" works too."
+Missing fields to choose from:
+{chr(10).join([f"- {label}" for label in missing_labels])}
 
-Craft your answer now.
+Examples of good groupings:
+- Ask for destination + trip type together (they're related)
+- Ask for number of days + start date together (scheduling related)
+- Ask for budget along with other practical details
+
+Craft a natural response that asks for the most logical 1-3 missing details now.
 """
 
     try:
@@ -75,10 +73,8 @@ Craft your answer now.
             raise ValueError("Empty clarification response")
     except Exception as exc:
         print(f"Error in clarification node: {exc}")
-        fallback = "flexible" if next_key == "trip_start_day" else None
-        if fallback == "flexible":
-            state["answer"] = "I still need your start date—when would you like to begin, or is it flexible?"
-        else:
-            state["answer"] = f"Could you share your {next_label} so I can keep tailoring the plan?"
+        # Fallback to asking for the first missing field
+        first_missing = missing_labels[0] if missing_labels else "details"
+        state["answer"] = f"Could you share your {first_missing} so I can keep tailoring the plan?"
 
     return state
