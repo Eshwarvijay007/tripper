@@ -1,5 +1,4 @@
 <div align="center">
-  <img src="https://raw.githubusercontent.com/Eshwarvijay007/tripper/main/tripplanner/src/assets/logos/logo.png" alt="naomi.ai logo" width="150">
   <h1>naomi.ai</h1>
   <p>✨ Your AI-powered travel assistant to plan your next adventure. ✨</p>
   <p>
